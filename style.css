@@ -1,0 +1,313 @@
+/* Globale Variablen für Farben und Schrift */
+:root {
+    --primary-color: #007aff;
+    --background-color: #f0f2f5;
+    --card-color: #ffffff;
+    --text-color: #1c1c1e;
+    --text-color-light: #8e8e93;
+    --header-color: #ffffff;
+    --border-color: #e0e0e0;
+}
+
+/* Grund-Reset und Schriftart */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    /* Wichtig, damit der Header Platz hat */
+    padding-top: 60px;
+}
+
+/* 1. Header */
+header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background-color: var(--header-color);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+    z-index: 100;
+}
+
+header h1 {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+header .header-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+header button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.8rem;
+    font-weight: 300;
+    color: var(--primary-color);
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+header button#view-toggle-btn svg {
+    fill: var(--primary-color);
+}
+
+/* 2. Ansichten-Container */
+.view {
+    display: none; /* Standardmässig versteckt */
+    padding: 16px;
+}
+.view.active {
+    display: block; /* Aktive Ansicht wird gezeigt */
+}
+
+/* 3. Ansicht 1: "Balken"-Ansicht */
+.subject-balken {
+    background-color: var(--card-color);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    overflow: hidden; /* Wichtig für das Aufklappen */
+}
+
+.balken-header {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    cursor: pointer;
+}
+
+.balken-header .subject-name {
+    font-weight: 600;
+    flex-grow: 1;
+}
+
+.balken-header .task-counter {
+    color: var(--text-color-light);
+    font-size: 0.9rem;
+    margin-right: 16px;
+}
+
+.balken-header .add-task-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    font-size: 1.2rem;
+    font-weight: 500;
+    cursor: pointer;
+    flex-shrink: 0; /* Verhindert, dass der Button gequetscht wird */
+}
+
+/* Akkordeon-Effekt */
+.task-list-collapsible {
+    max-height: 0; /* Standardmässig zugeklappt */
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    border-top: 1px solid transparent; /* Platzhalter */
+}
+
+.subject-balken.expanded .task-list-collapsible {
+    max-height: 1000px; /* "Geöffneter" Zustand (hoher Wert) */
+    transition: max-height 0.5s ease-in;
+    border-top-color: var(--border-color); /* Trennlinie erscheint */
+}
+
+
+/* 4. Ansicht 2: "Spalten"-Ansicht */
+#column-view {
+    display: flex; /* Wichtig: Diese Ansicht ist eine Flexbox */
+    overflow-x: auto; /* Das ermöglicht das horizontale Swipen */
+    padding: 16px 0 16px 16px;
+    /* "Sanftes" Scrollen auf iOS */
+    -webkit-overflow-scrolling: touch;
+    /* Scrollbar verstecken */
+    scrollbar-width: none; /* Firefox */
+}
+#column-view::-webkit-scrollbar {
+    display: none; /* Chrome, Safari */
+}
+/* Aktiv-Status für Spalten-Ansicht */
+#column-view.active {
+    display: flex;
+}
+
+.subject-column {
+    width: 300px; /* Fixe Breite für jede Spalte */
+    margin-right: 12px;
+    flex-shrink: 0; /* Verhindert, dass Spalten schrumpfen */
+    background-color: var(--background-color);
+    border-radius: 12px;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.subject-column h2 {
+    font-size: 1.1rem;
+    padding: 4px 0 12px 0;
+}
+
+.subject-column .task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* Abstand zwischen Task-Karten */
+}
+
+.subject-column .add-task-btn-column {
+    width: 100%;
+    margin-top: 12px;
+    padding: 10px;
+    background-color: #e5e5e5;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    color: var(--text-color);
+    cursor: pointer;
+}
+
+/* 5. Task-Karten (wird in beiden Ansichten genutzt) */
+.task-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background-color: var(--card-color);
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.task-card input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.task-card .task-details {
+    flex-grow: 1;
+}
+
+.task-card .task-description {
+    font-size: 0.95rem;
+}
+
+.task-card .task-due-date {
+    font-size: 0.8rem;
+    color: var(--text-color-light);
+    margin-top: 4px;
+}
+
+/* Style für erledigte Tasks */
+.task-card.is-done .task-details {
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+.task-card .delete-task-btn {
+    background: none;
+    border: none;
+    color: #ff3b30; /* Rote Farbe für Löschen */
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 4px;
+}
+
+
+/* 6. Modals (Pop-ups) */
+#modal-backdrop {
+    display: none; /* Versteckt */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 1000;
+}
+#modal-backdrop.active {
+    display: block; /* Sichtbar */
+}
+
+.modal {
+    display: none; /* Versteckt */
+    position: fixed;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 400px;
+    background-color: var(--card-color);
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    z-index: 1001;
+    padding: 20px;
+}
+.modal.active {
+    display: block; /* Sichtbar */
+}
+
+.modal h2 {
+    font-size: 1.2rem;
+    margin-bottom: 16px;
+}
+
+.modal input[type="text"],
+.modal input[type="date"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    margin-bottom: 16px;
+}
+.modal label {
+    font-size: 0.8rem;
+    color: var(--text-color-light);
+    margin-bottom: 4px;
+    display: block;
+}
+
+.modal .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.modal .modal-actions button {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+/* Abbrechen-Button */
+.modal .modal-actions button[id^="cancel-"] {
+    background-color: #e5e5e5;
+    color: var(--text-color);
+}
+
+/* Speichern-Button */
+.modal .modal-actions button[id^="save-"] {
+    background-color: var(--primary-color);
+    color: white;
+}

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check</title>
+    
+    <link rel="stylesheet" href="style.css">
+    
+    <link rel="manifest" href="manifest.json">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Check">
+    
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180x180.png">
+</head>
+<body>
+
+    <header>
+        <h1>Check</h1>
+        <div class="header-buttons">
+            <button id="view-toggle-btn" title="Ansicht wechseln">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 96 960 960" width="24"><path d="M440 856V616H200v240h240Zm320 0V616H520v240h240ZM200 536V296h240v240H200Zm320 0V296h240v240H520Z"/></svg>
+            </button>
+            <button id="add-subject-btn" title="Neues Fach hinzufügen">+</button>
+        </div>
+    </header>
+
+    <main id="view-container">
+        
+        <div id="list-view" class="view active">
+            </div>
+
+        <div id="column-view" class="view">
+            </div>
+    </main>
+
+    <div id="modal-backdrop"></div>
+
+    <div id="add-subject-modal" class="modal">
+        <h2>Neues Fach</h2>
+        <input type="text" id="subject-name-input" placeholder="Fachname (z.B. Mathematik)">
+        <div class="modal-actions">
+            <button id="cancel-add-subject">Abbrechen</button>
+            <button id="save-add-subject">Speichern</button>
+        </div>
+    </div>
+
+    <div id="add-task-modal" class="modal">
+        <h2>Neue Aufgabe</h2>
+        <input type="hidden" id="task-subject-id-input">
+        
+        <input type="text" id="task-desc-input" placeholder="Aufgabe (z.B. Buch S. 112)">
+        <label for="task-due-date-input">Fällig bis:</label>
+        <input type="date" id="task-due-date-input">
+        
+        <div class="modal-actions">
+            <button id="cancel-add-task">Abbrechen</button>
+            <button id="save-add-task">Speichern</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => console.log('ServiceWorker registriert:', registration))
+                    .catch(err => console.log('ServiceWorker Registrierung fehlgeschlagen:', err));
+            });
+        }
+    </script>
+
+</body>
+</html>
