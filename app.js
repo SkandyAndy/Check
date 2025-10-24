@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 transaction.onerror = (e) => reject(e.target.error);
                 transaction.oncomplete = () => {
-                    console.log('Fach und Tasks gelöscht');
+                    console.log('Liste und Tasks gelöscht');
                     resolve();
                 };
 
@@ -332,7 +332,7 @@ document.addEventListener('DOMContentLoaded', () => {
         overallBalken.innerHTML = `
             <div class="balken-header">
                 <span class="subject-name">Alle offenen Aufgaben</span>
-                <button class="delete-subject-btn" title="Fach löschen">${DELETE_ICON}</button>
+                <button class="delete-subject-btn" title="Liste löschen">${DELETE_ICON}</button>
                 <span class="task-counter">${sortedOverallTasks.length} offen</span>
                 <button class="add-task-btn" title="Neue Aufgabe">+</button>
             </div>
@@ -383,7 +383,7 @@ document.addEventListener('DOMContentLoaded', () => {
             balken.innerHTML = `
                 <div class="balken-header">
                     <span class="subject-name">${subject.name}</span>
-                    <button class="delete-subject-btn" title="Fach löschen">${DELETE_ICON}</button>
+                    <button class="delete-subject-btn" title="Liste löschen">${DELETE_ICON}</button>
                     <span class="task-counter">${doneCount}/${totalCount}</span>
                     <button class="add-task-btn" title="Neue Aufgabe">+</button>
                 </div>
@@ -398,7 +398,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     taskList.appendChild(createTaskElement(task, null)); // Ohne Fachnamen
                 });
             } else {
-                taskList.innerHTML = '<p class="empty-task-list">Keine Aufgaben für dieses Fach.</p>';
+                taskList.innerHTML = '<p class="empty-task-list">Du hast noch keine Aufgabe hinzugefügt.</p>';
             }
 
             balken.appendChild(taskList);
@@ -421,7 +421,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // NEU: Lösch-Knopf hinzugefügt
             column.innerHTML = `
-                <button class="delete-subject-btn" title="Fach löschen">${DELETE_ICON}</button>
+                <button class="delete-subject-btn" title="Liste löschen">${DELETE_ICON}</button>
                 <h2>${subject.name}</h2>
                 <div class="task-list">
                     </div>
@@ -491,7 +491,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 hideModals();
                 await loadAndRenderAll(); 
             } else {
-                alert('Bitte einen Fachnamen eingeben.');
+                alert('Bitte einen Namen für die Liste eingeben.');
             }
         });
 
@@ -541,8 +541,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 hideModals();
                 await loadAndRenderAll();
             } catch (error) {
-                console.error('Fehler beim Löschen des Fachs:', error);
-                alert('Das Fach konnte nicht gelöscht werden.');
+                console.error('Fehler beim Löschen der Liste:', error);
+                alert('Die Liste konnte nicht gelöscht werden.');
             }
         });
 
