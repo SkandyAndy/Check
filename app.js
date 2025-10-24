@@ -1,93 +1,101 @@
-// Wir warten, bis die HTML-Seite komplett geladen ist.
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- VARIABLEN & DOM-ELEMENTE ---
 
-    // Datenbank-Referenz (wird später befüllt)
     let db;
-
-    // Aktueller Ansichts-Status (list | column)
     let currentView = 'list';
 
-    // Buttons im Header
+    // Header
     const viewToggleBtn = document.getElementById('view-toggle-btn');
     const addSubjectBtn = document.getElementById('add-subject-btn');
     
-    // Ansichts-Container
+    // Ansichten
     const listView = document.getElementById('list-view');
     const columnView = document.getElementById('column-view');
 
-    // Modal-Elemente
+    // Modals
     const modalBackdrop = document.getElementById('modal-backdrop');
     const addSubjectModal = document.getElementById('add-subject-modal');
     const addTaskModal = document.getElementById('add-task-modal');
-    
-    // "Neues Fach" Modal-Felder
+    const editTaskModal = document.getElementById('edit-task-modal');
+    const deleteSubjectModal = document.getElementById('delete-subject-modal'); // NEU
+
+    // Felder "Neues Fach"
     const subjectNameInput = document.getElementById('subject-name-input');
     const saveSubjectBtn = document.getElementById('save-add-subject');
     const cancelSubjectBtn = document.getElementById('cancel-add-subject');
 
-    // "Neue Aufgabe" Modal-Felder
+    // Felder "Neue Aufgabe"
     const taskSubjectIdInput = document.getElementById('task-subject-id-input');
     const taskDescInput = document.getElementById('task-desc-input');
     const taskDueDateInput = document.getElementById('task-due-date-input');
     const saveTaskBtn = document.getElementById('save-add-task');
     const cancelTaskBtn = document.getElementById('cancel-add-task');
 
-    // Icons für den View-Toggle-Button
+    // Felder "Aufgabe bearbeiten"
+    const editTaskIdInput = document.getElementById('edit-task-id-input');
+    const editTaskDescInput = document.getElementById('edit-task-desc-input');
+    const editTaskDueDateInput = document.getElementById('edit-task-due-date-input');
+    const saveEditTaskBtn = document.getElementById('save-edit-task');
+    const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
+
+    // NEU: Felder "Fach löschen"
+    const deleteSubjectIdInput = document.getElementById('delete-subject-id-input');
+    const deleteSubjectName = document.getElementById('delete-subject-name');
+    const cancelDeleteSubjectBtn = document.getElementById('cancel-delete-subject');
+    const confirmDeleteSubjectBtn = document.getElementById('confirm-delete-subject');
+    
+    // Icons
     const LIST_VIEW_ICON = `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 96 960 960" width="24"><path d="M440 856V616H200v240h240Zm320 0V616H520v240h240ZM200 536V296h240v240H200Zm320 0V296h240v240H520Z"/></svg>`;
     const COLUMN_VIEW_ICON = `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 96 960 960" width="24"><path d="M200 856V296h120v560H200Zm240 0V296h120v560H440Zm240 0V296h120v560H680Z"/></svg>`;
+    
+    // NEU: Icon für Lösch-Knopf
+    const DELETE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 96 960 960" width="24"><path d="M280 936q-33 0-56.5-23.5T200 856V336h-40v-80h200v-40h320v40h200v80h-40v520q0 33-23.5 56.5T680 936H280Zm400-600H280v520h400V336ZM360 776h80V416h-80v360Zm160 0h80V416h-80v360ZM280 336v520-520Z"/></svg>`;
 
 
     // --- DATENBANK (INDEXEDDB) ---
 
-    /**
-     * Initialisiert die IndexedDB-Datenbank.
-     */
     function initDatabase() {
-        // Öffnet (oder erstellt) die Datenbank 'SchoolAppDB' Version 1
+        // ... (unverändert) ...
         const request = indexedDB.open('SchoolAppDB', 1);
 
-        // Fehlerbehandlung
         request.onerror = (event) => {
             console.error('Datenbank-Fehler:', event.target.error);
         };
 
-        // Erfolgreich geöffnet
         request.onsuccess = (event) => {
             db = event.target.result;
             console.log('Datenbank erfolgreich geöffnet.');
-            // Sobald die DB bereit ist, laden und rendern wir alles.
             loadAndRenderAll();
         };
 
-        // Wird ausgeführt, wenn die DB erstellt oder die Version erhöht wird.
         request.onupgradeneeded = (event) => {
             let db = event.target.result;
-
-            // 1. "Tabelle" (Object Store) für Fächer
-            // keyPath 'id' wird automatisch hochgezählt (autoIncrement)
             if (!db.objectStoreNames.contains('subjects')) {
                 db.createObjectStore('subjects', { keyPath: 'id', autoIncrement: true });
             }
-
-            // 2. "Tabelle" (Object Store) für Aufgaben
             if (!db.objectStoreNames.contains('tasks')) {
                 const tasksStore = db.createObjectStore('tasks', { keyPath: 'id', autoIncrement: true });
-                
-                // Wir erstellen einen Index 'subjectId', damit wir
-                // später schnell alle Aufgaben zu einem Fach finden können.
                 tasksStore.createIndex('subjectId', 'subjectId', { unique: false });
             }
         };
     }
 
-    /**
-     * Liest alle Einträge aus einem Store (Tabelle).
-     * @param {string} storeName - Der Name des Stores ('subjects' oder 'tasks')
-     * @returns {Promise<Array>} - Ein Promise, das mit einem Array der Daten aufgelöst wird.
-     */
+    function getFromDB(storeName, id) {
+        // ... (unverändert) ...
+        return new Promise((resolve, reject) => {
+            if (!db) return reject("DB nicht initialisiert");
+            const transaction = db.transaction(storeName, 'readonly');
+            const store = transaction.objectStore(storeName);
+            const request = store.get(id);
+
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = (e) => reject(e.target.error);
+        });
+    }
+
     function getAllFromDB(storeName) {
+        // ... (unverändert) ...
         return new Promise((resolve, reject) => {
             if (!db) return reject("DB nicht initialisiert");
             const transaction = db.transaction(storeName, 'readonly');
@@ -99,13 +107,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /**
-     * Fügt einen Eintrag zu einem Store hinzu.
-     * @param {string} storeName - 'subjects' oder 'tasks'
-     * @param {object} data - Das zu speichernde Objekt
-     * @returns {Promise<number>} - Ein Promise, das mit der ID des neuen Eintrags aufgelöst wird.
-     */
     function addToDB(storeName, data) {
+        // ... (unverändert) ...
         return new Promise((resolve, reject) => {
             if (!db) return reject("DB nicht initialisiert");
             const transaction = db.transaction(storeName, 'readwrite');
@@ -117,12 +120,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /**
-     * Aktualisiert einen bestehenden Eintrag.
-     * @param {string} storeName - 'subjects' oder 'tasks'
-     * @param {object} data - Das zu aktualisierende Objekt (muss eine 'id' haben)
-     */
     function updateInDB(storeName, data) {
+        // ... (unverändert) ...
         return new Promise((resolve, reject) => {
             if (!db) return reject("DB nicht initialisiert");
             const transaction = db.transaction(storeName, 'readwrite');
@@ -134,12 +133,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /**
-     * Löscht einen Eintrag aus einem Store.
-     * @param {string} storeName - 'subjects' oder 'tasks'
-     * @param {number} id - Die ID des zu löschenden Eintrags
-     */
     function deleteFromDB(storeName, id) {
+        // ... (unverändert) ...
         return new Promise((resolve, reject) => {
             if (!db) return reject("DB nicht initialisiert");
             const transaction = db.transaction(storeName, 'readwrite');
@@ -151,45 +146,132 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // NEU: Funktion zum Löschen eines Fachs UND aller zugehörigen Aufgaben
+    function deleteSubjectAndTasks(subjectId) {
+        return new Promise(async (resolve, reject) => {
+            if (!db) return reject("DB nicht initialisiert");
+            
+            try {
+                // 1. Alle Tasks für dieses Fach finden
+                const allTasks = await getAllFromDB('tasks');
+                const tasksToDelete = allTasks.filter(t => t.subjectId === subjectId);
+
+                // 2. Eine Transaktion für BEIDE Stores starten
+                const transaction = db.transaction(['subjects', 'tasks'], 'readwrite');
+                const subjectStore = transaction.objectStore('subjects');
+                const taskStore = transaction.objectStore('tasks');
+
+                transaction.onerror = (e) => reject(e.target.error);
+                transaction.oncomplete = () => {
+                    console.log('Fach und Tasks gelöscht');
+                    resolve();
+                };
+
+                // 3. Alle zugehörigen Tasks löschen
+                tasksToDelete.forEach(task => taskStore.delete(task.id));
+                
+                // 4. Das Fach selbst löschen
+                subjectStore.delete(subjectId);
+
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
 
     // --- MODAL (POP-UP) STEUERUNG ---
 
-    /** Zeigt ein Modal und das Backdrop an */
     function showModal(modalElement) {
         modalBackdrop.classList.add('active');
         modalElement.classList.add('active');
     }
 
-    /** Versteckt alle Modals und das Backdrop */
     function hideModals() {
         modalBackdrop.classList.remove('active');
         addSubjectModal.classList.remove('active');
         addTaskModal.classList.remove('active');
+        editTaskModal.classList.remove('active');
+        deleteSubjectModal.classList.remove('active'); // NEU
         
-        // Formulare zurücksetzen
+        // ... (Formulare zurücksetzen, unverändert) ...
         subjectNameInput.value = '';
         taskDescInput.value = '';
         taskDueDateInput.value = '';
         taskSubjectIdInput.value = '';
+        editTaskIdInput.value = '';
+        editTaskDescInput.value = '';
+        editTaskDueDateInput.value = '';
+        
+        // NEU: Lösch-Modal-Felder zurücksetzen
+        deleteSubjectIdInput.value = '';
+        deleteSubjectName.textContent = '';
+    }
+
+    async function openEditTaskModal(taskId) {
+        // ... (unverändert) ...
+        try {
+            const task = await getFromDB('tasks', taskId);
+            if (!task) return;
+            editTaskIdInput.value = task.id;
+            editTaskDescInput.value = task.description;
+            editTaskDueDateInput.value = task.dueDate || ''; 
+            showModal(editTaskModal);
+            editTaskDescInput.focus();
+        } catch (error) {
+            console.error('Fehler beim Öffnen des Edit-Modals:', error);
+        }
+    }
+
+    // NEU: Helper-Funktion zum Öffnen des "Fach löschen"-Modals
+    async function openDeleteSubjectModal(subjectId) {
+        try {
+            const subject = await getFromDB('subjects', subjectId);
+            if (!subject) return;
+            
+            deleteSubjectIdInput.value = subject.id;
+            deleteSubjectName.textContent = subject.name; // Zeigt den Namen im Modal an
+            showModal(deleteSubjectModal);
+
+        } catch (error) {
+            console.error('Fehler beim Öffnen des Lösch-Modals:', error);
+        }
     }
 
     // --- RENDER-FUNKTIONEN (ZEICHNEN DER UI) ---
 
-    /**
-     * Hauptfunktion: Lädt alle Daten aus der DB und ruft die Render-Funktionen auf.
-     */
+    // NEU: Helper-Funktion zum Sortieren der Tasks
+    function sortTasks(taskArray) {
+        return taskArray.sort((a, b) => {
+            // 1. Erledigte (isDone: true) immer nach unten
+            if (a.isDone !== b.isDone) {
+                return a.isDone ? 1 : -1;
+            }
+            
+            // 2. Tasks ohne Fälligkeitsdatum (dueDate) nach unten
+            // (aber über die erledigten)
+            if (a.dueDate && !b.dueDate) return -1; // a hat Datum, b nicht -> a nach oben
+            if (!a.dueDate && b.dueDate) return 1;  // a hat kein Datum, b schon -> a nach unten
+            if (!a.dueDate && !b.dueDate) return 0; // beide haben kein Datum -> Reihenfolge egal
+
+            // 3. Nach Datum sortieren (älteste zuerst)
+            return new Date(a.dueDate) - new Date(b.dueDate);
+        });
+    }
+
     async function loadAndRenderAll() {
+        const expandedSubjectIds = new Set(
+            [...document.querySelectorAll('.subject-balken.expanded')]
+                .map(balken => balken.dataset.subjectId) // Speichert jetzt Strings (z.B. "1" oder "overall")
+        );
+
         try {
-            // Daten parallel laden
             const [subjects, tasks] = await Promise.all([
                 getAllFromDB('subjects'),
                 getAllFromDB('tasks')
             ]);
             
-            console.log('Daten geladen:', { subjects, tasks });
-
-            // Beide Ansichten mit den frischen Daten neu zeichnen
-            renderListView(subjects, tasks);
+            renderListView(subjects, tasks, expandedSubjectIds);
             renderColumnView(subjects, tasks);
 
         } catch (error) {
@@ -197,31 +279,32 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    /**
-     * Erstellt ein einzelnes Task-Karten-Element (wird von beiden Ansichten genutzt).
-     * @param {object} task - Das Aufgaben-Objekt aus der DB.
-     * @returns {HTMLElement} - Das 'div.task-card' Element.
-     */
-    function createTaskElement(task) {
+    // GEÄNDERT: Akzeptiert jetzt `subjectName` für die "Gesamt"-Liste
+    function createTaskElement(task, subjectName = null) {
         const taskCard = document.createElement('div');
         taskCard.className = 'task-card';
-        taskCard.dataset.taskId = task.id; // Wichtig für Klick-Handler
+        taskCard.dataset.taskId = task.id;
         if (task.isDone) {
             taskCard.classList.add('is-done');
         }
 
-        // Fälligkeitsdatum formatieren (z.B. "Fällig am: 24.10.2025")
+        // NEU: Fügt den Fachnamen hinzu, falls übergeben
+        let subjectNameHtml = '';
+        if (subjectName) {
+            subjectNameHtml = `<div class="task-subject-name">${subjectName}</div>`;
+        }
+
         let dueDateHtml = '';
         if (task.dueDate) {
-            const date = new Date(task.dueDate + 'T00:00:00'); // Zeit setzen, um Zeitzonenprobleme zu vermeiden
+            const date = new Date(task.dueDate + 'T00:00:00');
             const formattedDate = date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
             dueDateHtml = `<div class="task-due-date">Fällig am: ${formattedDate}</div>`;
         }
 
         taskCard.innerHTML = `
             <input type="checkbox" class="task-checkbox" ${task.isDone ? 'checked' : ''}>
-            <div class="task-details">
-                <div class="task-description">${task.description}</div>
+            <div class="task-details" title="Aufgabe bearbeiten">
+                ${subjectNameHtml} <div class="task-description">${task.description}</div>
                 ${dueDateHtml}
             </div>
             <button class="delete-task-btn" title="Aufgabe löschen">X</button>
@@ -229,47 +312,90 @@ document.addEventListener('DOMContentLoaded', () => {
         return taskCard;
     }
 
-    /**
-     * Zeichnet die komplette "Balken"-Ansicht (Ansicht 1)
-     */
-    function renderListView(subjects, tasks) {
-        // Alte Inhalte leeren
+    // STARK GEÄNDERT: Fügt "Gesamt"-Liste, Sortierung und Lösch-Knopf hinzu
+    function renderListView(subjects, tasks, expandedSubjectIds = new Set()) {
         listView.innerHTML = '';
 
-        if (subjects.length === 0) {
+        // --- 1. NEU: "Gesamt"-Liste ---
+        const allIncompleteTasks = tasks.filter(t => !t.isDone);
+        const sortedOverallTasks = sortTasks(allIncompleteTasks); // Nur sortieren, da alle !isDone
+
+        const overallBalken = document.createElement('div');
+        overallBalken.className = 'subject-balken';
+        overallBalken.id = 'overall-list-balken'; // Für spezielles Styling
+        overallBalken.dataset.subjectId = 'overall'; // Spezielle ID
+
+        if (expandedSubjectIds.has('overall')) {
+            overallBalken.classList.add('expanded');
+        }
+
+        overallBalken.innerHTML = `
+            <div class="balken-header">
+                <span class="subject-name">Alle offenen Aufgaben</span>
+                <button class="delete-subject-btn" title="Fach löschen">${DELETE_ICON}</button>
+                <span class="task-counter">${sortedOverallTasks.length} offen</span>
+                <button class="add-task-btn" title="Neue Aufgabe">+</button>
+            </div>
+        `;
+
+        const overallTaskList = document.createElement('div');
+        overallTaskList.className = 'task-list-collapsible';
+        
+        if (sortedOverallTasks.length > 0) {
+            sortedOverallTasks.forEach(task => {
+                // Den Fachnamen für den Task finden
+                const subject = subjects.find(s => s.id === task.subjectId);
+                const subjectName = subject ? subject.name : 'Unbekannt';
+                // Task-Element mit Fachnamen erstellen
+                overallTaskList.appendChild(createTaskElement(task, subjectName));
+            });
+        } else {
+            overallTaskList.innerHTML = '<p class="empty-task-list">Super! Keine Aufgaben mehr offen.</p>';
+        }
+        overallBalken.appendChild(overallTaskList);
+        listView.appendChild(overallBalken);
+        // --- Ende "Gesamt"-Liste ---
+
+
+        // --- 2. Reguläre Fächer-Listen ---
+        if (subjects.length === 0 && allIncompleteTasks.length === 0) {
             listView.innerHTML = '<p class="empty-state">Noch keine Fächer. Füge oben rechts (+) ein Fach hinzu.</p>';
             return;
         }
 
         subjects.forEach(subject => {
-            // Alle Tasks für dieses Fach filtern
             const tasksForSubject = tasks.filter(t => t.subjectId === subject.id);
-            // Zählen, wie viele davon erledigt sind
+            // NEU: Tasks sortieren
+            const sortedTasks = sortTasks(tasksForSubject);
+            
             const doneCount = tasksForSubject.filter(t => t.isDone).length;
             const totalCount = tasksForSubject.length;
 
-            // 1. "Balken" (Wrapper) erstellen
             const balken = document.createElement('div');
             balken.className = 'subject-balken';
-            balken.dataset.subjectId = subject.id; // Wichtig für Klick-Handler
+            balken.dataset.subjectId = subject.id;
+            
+            if (expandedSubjectIds.has(String(subject.id))) { // ID zu String konvertieren
+                balken.classList.add('expanded');
+            }
 
-            // 2. Header des Balkens erstellen
+            // NEU: Lösch-Knopf hinzugefügt
             balken.innerHTML = `
                 <div class="balken-header">
                     <span class="subject-name">${subject.name}</span>
+                    <button class="delete-subject-btn" title="Fach löschen">${DELETE_ICON}</button>
                     <span class="task-counter">${doneCount}/${totalCount}</span>
                     <button class="add-task-btn" title="Neue Aufgabe">+</button>
                 </div>
             `;
 
-            // 3. Aufklappbare Task-Liste erstellen
             const taskList = document.createElement('div');
             taskList.className = 'task-list-collapsible';
             
-            // Jede Aufgabe als Task-Element hinzufügen
-            if (tasksForSubject.length > 0) {
-                tasksForSubject.forEach(task => {
-                    taskList.appendChild(createTaskElement(task));
+            // NEU: Sortierte Liste verwenden
+            if (sortedTasks.length > 0) {
+                sortedTasks.forEach(task => {
+                    taskList.appendChild(createTaskElement(task, null)); // Ohne Fachnamen
                 });
             } else {
                 taskList.innerHTML = '<p class="empty-task-list">Keine Aufgaben für dieses Fach.</p>';
@@ -280,39 +406,37 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /**
-     * Zeichnet die komplette "Spalten"-Ansicht (Ansicht 2)
-     */
+    // STARK GEÄNDERT: Fügt Sortierung und Lösch-Knopf hinzu
     function renderColumnView(subjects, tasks) {
-        // Alte Inhalte leeren
         columnView.innerHTML = '';
 
         if (subjects.length === 0) {
-            // In dieser Ansicht ist kein Platz für einen "Empty State"
             return;
         }
 
         subjects.forEach(subject => {
-            // 1. Spalte erstellen
             const column = document.createElement('div');
             column.className = 'subject-column';
-            column.dataset.subjectId = subject.id; // Wichtig für Klick-Handler
+            column.dataset.subjectId = subject.id; 
 
-            // 2. Spalten-Inhalt (Titel, Task-Liste, Button)
+            // NEU: Lösch-Knopf hinzugefügt
             column.innerHTML = `
+                <button class="delete-subject-btn" title="Fach löschen">${DELETE_ICON}</button>
                 <h2>${subject.name}</h2>
                 <div class="task-list">
                     </div>
                 <button class="add-task-btn-column" title="Neue Aufgabe">+ Aufgabe hinzufügen</button>
             `;
 
-            // 3. Task-Liste befüllen
             const taskList = column.querySelector('.task-list');
             const tasksForSubject = tasks.filter(t => t.subjectId === subject.id);
+            // NEU: Tasks sortieren
+            const sortedTasks = sortTasks(tasksForSubject);
 
-            if (tasksForSubject.length > 0) {
-                tasksForSubject.forEach(task => {
-                    taskList.appendChild(createTaskElement(task));
+            // NEU: Sortierte Liste verwenden
+            if (sortedTasks.length > 0) {
+                sortedTasks.forEach(task => {
+                    taskList.appendChild(createTaskElement(task, null)); // Ohne Fachnamen
                 });
             } else {
                 taskList.innerHTML = '<p class="empty-task-list">Keine Aufgaben.</p>';
@@ -325,15 +449,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- EVENT-LISTENER (BENUTZER-AKTIONEN) ---
 
-    /**
-     * Richtet alle globalen Klick-Handler ein.
-     */
+    // STARK GEÄNDERT: Fügt Handler für Lösch-Modals hinzu
     function setupEventListeners() {
 
         // --- Header-Buttons ---
-
-        // Ansicht umschalten
         viewToggleBtn.addEventListener('click', () => {
+            // ... (unverändert) ...
             if (currentView === 'list') {
                 currentView = 'column';
                 listView.classList.remove('active');
@@ -349,30 +470,26 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // "Neues Fach" Modal öffnen
         addSubjectBtn.addEventListener('click', () => {
             showModal(addSubjectModal);
-            subjectNameInput.focus(); // Direkt ins Textfeld springen
+            subjectNameInput.focus(); 
         });
 
         // --- Modal-Aktionen ---
-
-        // Modal "Neues Fach" ABBRECHEN
         cancelSubjectBtn.addEventListener('click', hideModals);
-        
-        // Modal "Neue Aufgabe" ABBRECHEN
         cancelTaskBtn.addEventListener('click', hideModals);
-        
-        // Modal-Hintergrund-Klick schliesst auch
         modalBackdrop.addEventListener('click', hideModals);
+        cancelEditTaskBtn.addEventListener('click', hideModals); 
+        cancelDeleteSubjectBtn.addEventListener('click', hideModals); // NEU
 
         // Modal "Neues Fach" SPEICHERN
         saveSubjectBtn.addEventListener('click', async () => {
+            // ... (unverändert) ...
             const name = subjectNameInput.value.trim();
             if (name) {
                 await addToDB('subjects', { name: name });
                 hideModals();
-                await loadAndRenderAll(); // Alles neu laden und zeichnen
+                await loadAndRenderAll(); 
             } else {
                 alert('Bitte einen Fachnamen eingeben.');
             }
@@ -380,40 +497,66 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Modal "Neue Aufgabe" SPEICHERN
         saveTaskBtn.addEventListener('click', async () => {
+            // ... (unverändert) ...
             const description = taskDescInput.value.trim();
             const dueDate = taskDueDateInput.value;
-            const subjectId = parseInt(taskSubjectIdInput.value); // Wichtig: ID in Zahl umwandeln
-
+            const subjectId = parseInt(taskSubjectIdInput.value); 
             if (description && subjectId) {
-                const newTask = {
-                    subjectId: subjectId,
-                    description: description,
-                    dueDate: dueDate || null, // Speichere null, wenn kein Datum gesetzt
-                    isDone: false
-                };
+                const newTask = { subjectId: subjectId, description: description, dueDate: dueDate || null, isDone: false };
                 await addToDB('tasks', newTask);
                 hideModals();
-                await loadAndRenderAll(); // Alles neu laden und zeichnen
+                await loadAndRenderAll(); 
             } else {
                 alert('Bitte eine Beschreibung eingeben.');
             }
         });
+        
+        // Modal "Aufgabe bearbeiten" SPEICHERN
+        saveEditTaskBtn.addEventListener('click', async () => {
+            // ... (unverändert) ...
+            const id = parseInt(editTaskIdInput.value);
+            const description = editTaskDescInput.value.trim();
+            const dueDate = editTaskDueDateInput.value;
+            if (!id || !description) return;
+            try {
+                const originalTask = await getFromDB('tasks', id);
+                if (!originalTask) return;
+                originalTask.description = description;
+                originalTask.dueDate = dueDate || null;
+                await updateInDB('tasks', originalTask);
+                hideModals();
+                await loadAndRenderAll(); 
+            } catch (error) {
+                console.error('Fehler beim Speichern der Änderungen:', error);
+            }
+        });
+
+        // NEU: Modal "Fach löschen" BESTÄTIGEN
+        confirmDeleteSubjectBtn.addEventListener('click', async () => {
+            const subjectId = parseInt(deleteSubjectIdInput.value);
+            if (!subjectId) return;
+
+            try {
+                await deleteSubjectAndTasks(subjectId);
+                hideModals();
+                await loadAndRenderAll();
+            } catch (error) {
+                console.error('Fehler beim Löschen des Fachs:', error);
+                alert('Das Fach konnte nicht gelöscht werden.');
+            }
+        });
 
 
-        // --- Event Delegation für dynamische Inhalte (Tasks & Fächer) ---
-        // Wir lauschen auf Klicks im ganzen 'body' und schauen dann,
-        // *wo* genau geklickt wurde. Das ist viel effizienter als
-        // hunderte Listener an jede einzelne Task-Karte zu hängen.
-
+        // --- Event Delegation für dynamische Inhalte ---
+        // GEÄNDERT: Fügt Handler für "Fach löschen" hinzu
         document.body.addEventListener('click', async (event) => {
-            const target = event.target; // Das Element, das geklickt wurde
+            const target = event.target;
 
             // AKTION: Balken auf/zuklappen
-            // (Klick auf den Header-Teil des Balkens)
             const balkenHeader = target.closest('.balken-header');
             if (balkenHeader) {
-                // Verhindern, dass der Klick auf den "+"-Button auch den Balken zuklappt
-                if (!target.classList.contains('add-task-btn')) {
+                // Verhindern, dass Klicks auf Knöpfe den Balken schalten
+                if (!target.closest('button')) {
                     balkenHeader.parentElement.classList.toggle('expanded');
                 }
             }
@@ -422,7 +565,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const addTaskBtnList = target.closest('.add-task-btn');
             if (addTaskBtnList) {
                 const subjectId = parseInt(addTaskBtnList.closest('.subject-balken').dataset.subjectId);
-                taskSubjectIdInput.value = subjectId; // Verstecktes Feld befüllen
+                taskSubjectIdInput.value = subjectId; 
                 showModal(addTaskModal);
                 taskDescInput.focus();
             }
@@ -431,7 +574,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const addTaskBtnColumn = target.closest('.add-task-btn-column');
             if (addTaskBtnColumn) {
                 const subjectId = parseInt(addTaskBtnColumn.closest('.subject-column').dataset.subjectId);
-                taskSubjectIdInput.value = subjectId; // Verstecktes Feld befüllen
+                taskSubjectIdInput.value = subjectId; 
                 showModal(addTaskModal);
                 taskDescInput.focus();
             }
@@ -442,45 +585,59 @@ document.addEventListener('DOMContentLoaded', () => {
                 const taskId = parseInt(deleteTaskBtn.closest('.task-card').dataset.taskId);
                 if (confirm('Möchtest du diese Aufgabe wirklich löschen?')) {
                     await deleteFromDB('tasks', taskId);
-                    await loadAndRenderAll(); // Neu zeichnen
+                    await loadAndRenderAll(); 
                 }
             }
             
-            // AKTION: Aufgabe abhaken (Checkbox)
-            // Wichtig: Wir nutzen 'change' statt 'click' für Checkboxen
+            // AKTION: Aufgabe bearbeiten (Klick auf .task-details)
+            const taskDetails = target.closest('.task-details');
+            if (taskDetails) {
+                // Nur auslösen, wenn NICHT in der "Gesamt"-Liste (da dort Klick auf Task=Checkbox)
+                // Oh, warte, der Klick ist ja auf .task-details, nicht auf die Checkbox. Das passt.
+                const taskId = parseInt(taskDetails.closest('.task-card').dataset.taskId);
+                await openEditTaskModal(taskId);
+            }
+            
+            // NEU: AKTION: Fach löschen
+            const deleteSubjectBtn = target.closest('.delete-subject-btn');
+            if (deleteSubjectBtn) {
+                let subjectId;
+                const balken = deleteSubjectBtn.closest('.subject-balken');
+                const column = deleteSubjectBtn.closest('.subject-column');
+                
+                if (balken) {
+                    subjectId = balken.dataset.subjectId;
+                } else if (column) {
+                    subjectId = column.dataset.subjectId;
+                }
+                
+                if (subjectId && subjectId !== 'overall') { // "Gesamt"-Liste kann nicht gelöscht werden
+                    await openDeleteSubjectModal(parseInt(subjectId));
+                } else if (subjectId === 'overall') {
+                    // Optional: Feedback geben
+                    // alert('Die "Gesamt"-Liste kann nicht gelöscht werden.');
+                }
+            }
         });
         
         // Separater Listener für 'change' Events (Checkboxes)
         document.body.addEventListener('change', async (event) => {
+            // ... (unverändert) ...
             const target = event.target;
-            
             if (target.classList.contains('task-checkbox')) {
-                const taskCard = target.closest('.task-card');
-                const taskId = parseInt(taskCard.dataset.taskId);
+                const taskId = parseInt(target.closest('.task-card').dataset.taskId);
                 const isDone = target.checked;
-
-                // 1. Task-Objekt aus DB holen (wir brauchen das ganze Objekt für 'update')
-                const transaction = db.transaction('tasks', 'readonly');
-                const store = transaction.objectStore('tasks');
-                const request = store.get(taskId);
-                
-                request.onsuccess = async () => {
-                    const taskToUpdate = request.result;
-                    if (taskToUpdate) {
-                        // 2. Status ändern
-                        taskToUpdate.isDone = isDone;
-                        // 3. Task in DB zurückspeichern
-                        await updateInDB('tasks', taskToUpdate);
-                        // 4. UI neu laden (damit auch der Zähler "x/y" stimmt)
-                        await loadAndRenderAll();
-                    }
-                };
+                const taskToUpdate = await getFromDB('tasks', taskId);
+                if (taskToUpdate) {
+                    taskToUpdate.isDone = isDone;
+                    await updateInDB('tasks', taskToUpdate);
+                    await loadAndRenderAll();
+                }
             }
         });
     }
 
     // --- INITIALISIERUNG ---
-    // App starten
     initDatabase();
     setupEventListeners();
 

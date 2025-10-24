@@ -1,20 +1,21 @@
 {
     "name": "Check",
     "short_name": "Check",
-    "description": "Eine App zur Verwaltung von Schulaufgaben.",
-    "start_url": "/index.html",
+    "description": "Eine App zur Verwaltung von Aufgaben.",
+    "start_url": "/Check/",
+    "scope": "/Check/",
     "display": "standalone",
     "background_color": "#f0f2f5",
     "theme_color": "#007aff",
     "orientation": "portrait-primary",
     "icons": [
         {
-            "src": "icons/icon-192x192.png",
+            "src": "icons/icon-192.png",
             "type": "image/png",
             "sizes": "192x192"
         },
         {
-            "src": "icons/icon-512x512.png",
+            "src": "icons/icon-512.png",
             "type": "image/png",
             "sizes": "512x512"
         }

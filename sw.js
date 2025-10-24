@@ -1,15 +1,15 @@
 // Name des Caches (wichtig für Versionierung)
-const CACHE_NAME = 'school-app-cache-v1';
+const CACHE_NAME = 'check-app-cache-v1';
 
 // Dateien, die für die App-Shell benötigt werden
 const FILES_TO_CACHE = [
-    '/',
-    '/index.html',
-    '/style.css',
-    '/app.js',
-    '/manifest.json',
-    '/icons/icon-192x192.png',
-    '/icons/icon-512x512.png'
+    './',
+    './index.html',
+    './style.css',
+    './app.js',
+    './manifest.json',
+    './icons/icon-192.png',
+    './icons/icon-512.png'
 ];
 
 // Event 1: 'install'

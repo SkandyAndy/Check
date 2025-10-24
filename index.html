@@ -13,8 +13,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Check">
     
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180x180.png">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
 </head>
 <body>
 
@@ -24,7 +24,7 @@
             <button id="view-toggle-btn" title="Ansicht wechseln">
                 <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 96 960 960" width="24"><path d="M440 856V616H200v240h240Zm320 0V616H520v240h240ZM200 536V296h240v240H200Zm320 0V296h240v240H520Z"/></svg>
             </button>
-            <button id="add-subject-btn" title="Neues Fach hinzufügen">+</button>
+            <button id="add-subject-btn" title="Neue Liste hinzufügen">+</button>
         </div>
     </header>
 
@@ -41,7 +41,7 @@
 
     <div id="add-subject-modal" class="modal">
         <h2>Neues Fach</h2>
-        <input type="text" id="subject-name-input" placeholder="Fachname (z.B. Mathematik)">
+        <input type="text" id="subject-name-input" placeholder="Listenname">
         <div class="modal-actions">
             <button id="cancel-add-subject">Abbrechen</button>
             <button id="save-add-subject">Speichern</button>
@@ -52,13 +52,39 @@
         <h2>Neue Aufgabe</h2>
         <input type="hidden" id="task-subject-id-input">
         
-        <input type="text" id="task-desc-input" placeholder="Aufgabe (z.B. Buch S. 112)">
+        <input type="text" id="task-desc-input" placeholder="Neue Aufgabe">
         <label for="task-due-date-input">Fällig bis:</label>
         <input type="date" id="task-due-date-input">
         
         <div class="modal-actions">
             <button id="cancel-add-task">Abbrechen</button>
             <button id="save-add-task">Speichern</button>
+        </div>
+    </div>
+
+    <div id="edit-task-modal" class="modal">
+        <h2>Aufgabe bearbeiten</h2>
+        <input type="hidden" id="edit-task-id-input">
+            
+        <input type="text" id="edit-task-desc-input" placeholder="Neue Aufgabe">
+        <label for="edit-task-due-date-input">Fällig bis:</label>
+        <input type="date" id="edit-task-due-date-input">
+            
+        <div class="modal-actions">
+            <button id="cancel-edit-task">Abbrechen</button>
+            <button id="save-edit-task">Speichern</button>
+        </div>
+    </div>
+
+    <div id="delete-subject-modal" class="modal">
+        <h2>Fach löschen</h2>
+        <input type="hidden" id="delete-subject-id-input">
+        <p>Möchtest du das Fach "<strong id="delete-subject-name"></strong>" wirklich löschen?</p>
+        <p class="warning">Alle zugehörigen Aufgaben werden ebenfalls endgültig gelöscht!</p>
+        
+        <div class="modal-actions">
+            <button id="cancel-delete-subject">Abbrechen</button>
+            <button id="confirm-delete-subject">Endgültig löschen</button>
         </div>
     </div>
 

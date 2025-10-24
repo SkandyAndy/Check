@@ -5,8 +5,8 @@
     --card-color: #ffffff;
     --text-color: #1c1c1e;
     --text-color-light: #8e8e93;
-    --header-color: #ffffff;
-    --border-color: #e0e0e0;
+    --header-color: #daddbf;
+    --border-color: #000000;
 }
 
 /* Grund-Reset und Schriftart */
@@ -18,7 +18,7 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    background-color: var(--background-color);
+    background-image: linear-gradient(to right, #478dcfb0, #245463b9);
     color: var(--text-color);
     /* Wichtig, damit der Header Platz hat */
     padding-top: 60px;
@@ -78,7 +78,7 @@ header button#view-toggle-btn svg {
 
 /* 3. Ansicht 1: "Balken"-Ansicht */
 .subject-balken {
-    background-color: var(--card-color);
+    background-image: linear-gradient(to right, #d6ceb6dc, #d6d1bc);
     border-radius: 12px;
     margin-bottom: 12px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.08);
@@ -119,21 +119,21 @@ header button#view-toggle-btn svg {
 /* Akkordeon-Effekt */
 .task-list-collapsible {
     max-height: 0; /* Standardmässig zugeklappt */
+    margin: 10px;
     overflow: hidden;
-    transition: max-height 0.3s ease-out;
+    transition: max-height 0.5s ease-out;
     border-top: 1px solid transparent; /* Platzhalter */
 }
 
 .subject-balken.expanded .task-list-collapsible {
     max-height: 1000px; /* "Geöffneter" Zustand (hoher Wert) */
-    transition: max-height 0.5s ease-in;
-    border-top-color: var(--border-color); /* Trennlinie erscheint */
+    transition: max-height 0.8s ease-in;
 }
 
 
 /* 4. Ansicht 2: "Spalten"-Ansicht */
 #column-view {
-    display: flex; /* Wichtig: Diese Ansicht ist eine Flexbox */
+    /*display: flex; /* Wichtig: Diese Ansicht ist eine Flexbox */
     overflow-x: auto; /* Das ermöglicht das horizontale Swipen */
     padding: 16px 0 16px 16px;
     /* "Sanftes" Scrollen auf iOS */
@@ -153,7 +153,7 @@ header button#view-toggle-btn svg {
     width: 300px; /* Fixe Breite für jede Spalte */
     margin-right: 12px;
     flex-shrink: 0; /* Verhindert, dass Spalten schrumpfen */
-    background-color: var(--background-color);
+    background-image: linear-gradient(to right, #d6cc9fc4, #d1c9a5);
     border-radius: 12px;
     padding: 12px;
     border: 1px solid var(--border-color);
@@ -187,7 +187,8 @@ header button#view-toggle-btn svg {
     display: flex;
     align-items: center;
     gap: 12px;
-    background-color: var(--card-color);
+    margin: 5px 0 0 0;
+    background-color: rgba(255, 252, 243, 0.699);
     border-radius: 8px;
     padding: 12px;
     box-shadow: 0 1px 2px rgba(0,0,0,0.05);
@@ -227,6 +228,14 @@ header button#view-toggle-btn svg {
     font-weight: bold;
     cursor: pointer;
     padding: 4px;
+}
+
+/* Regel für "Keine Aufgaben"-Text */
+.empty-task-list {
+    padding: 24px 0; /* Vertikaler "buffer" (Höhe) */
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-color-light);
 }
 
 
@@ -309,5 +318,113 @@ header button#view-toggle-btn svg {
 /* Speichern-Button */
 .modal .modal-actions button[id^="save-"] {
     background-color: var(--primary-color);
+    color: white;
+}
+
+/* Stile für "Fach löschen" */
+.balken-header {
+    /* Wir ändern das Layout, um den Lösch-Knopf unterzubringen */
+    display: grid;
+    grid-template-columns: 1fr auto auto auto; /* Name | Löschen | Zähler | Plus */
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    cursor: pointer;
+}
+
+.balken-header .subject-name {
+    /* Name nimmt den '1fr' Platz ein */
+    grid-column: 1;
+    font-weight: 600;
+}
+
+.balken-header .delete-subject-btn {
+    grid-column: 2;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.balken-header .delete-subject-btn svg {
+    fill: var(--text-color-light);
+    width: 20px;
+    height: 20px;
+}
+.balken-header .delete-subject-btn:hover svg {
+    fill: #ff3b30; /* Rot beim Hovern */
+}
+
+.balken-header .task-counter {
+    grid-column: 3;
+    color: var(--text-color-light);
+    font-size: 0.9rem;
+    /* margin-right: 16px; (wird durch gap ersetzt) */
+}
+
+.balken-header .add-task-btn {
+    grid-column: 4;
+    /* ... (restliche Stile bleiben) ... */
+}
+
+
+/* "Löschen"-Knopf in der Spaltenansicht */
+.subject-column {
+    position: relative; /* Wichtig für die Positionierung des Knopfes */
+}
+
+.subject-column .delete-subject-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+}
+.subject-column .delete-subject-btn svg {
+    fill: var(--text-color-light);
+    width: 20px;
+    height: 20px;
+}
+.subject-column .delete-subject-btn:hover svg {
+    fill: #ff3b30;
+}
+
+
+/* NEU: Stile für "Gesamt"-Liste */
+#overall-list-balken .balken-header {
+    /* "Löschen" und "Plus" Knöpfe verstecken */
+    grid-template-columns: 1fr auto; /* Nur Name | Zähler */
+}
+#overall-list-balken .delete-subject-btn,
+#overall-list-balken .add-task-btn {
+    display: none;
+}
+
+/* Neuer Stil für Tasks in der "Gesamt"-Liste */
+.task-card .task-subject-name {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--primary-color); /* Blaue Akzentfarbe */
+    margin-bottom: 4px;
+    text-transform: uppercase;
+}
+
+/* Stile für Lösch-Modal */
+#delete-subject-modal p {
+    margin-bottom: 8px;
+}
+#delete-subject-modal .warning {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #ff3b30;
+}
+#confirm-delete-subject {
+    background-color: #ff3b30; /* Roter Knopf */
     color: white;
 }
