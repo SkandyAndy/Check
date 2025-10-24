@@ -359,7 +359,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- 2. Reguläre Fächer-Listen ---
         if (subjects.length === 0 && allIncompleteTasks.length === 0) {
-            listView.innerHTML = '<p class="empty-state">Noch keine Fächer. Füge oben rechts (+) ein Fach hinzu.</p>';
+            listView.innerHTML = '<p class="empty-state">Noch keine To-Do Liste. Füge oben rechts (+) eine Liste hinzu.</p>';
             return;
         }
 
