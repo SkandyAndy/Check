@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const addSubjectModal = document.getElementById('add-subject-modal');
     const addTaskModal = document.getElementById('add-task-modal');
     const editTaskModal = document.getElementById('edit-task-modal');
-    const deleteSubjectModal = document.getElementById('delete-subject-modal'); // NEU
+    const deleteSubjectModal = document.getElementById('delete-subject-modal'); 
 
     // Felder "Neues Fach"
     const subjectNameInput = document.getElementById('subject-name-input');
@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const taskSubjectIdInput = document.getElementById('task-subject-id-input');
     const taskDescInput = document.getElementById('task-desc-input');
     const taskDueDateInput = document.getElementById('task-due-date-input');
+    const addTaskPriorityToggle = document.getElementById('add-task-priority-toggle'); // NEU
     const saveTaskBtn = document.getElementById('save-add-task');
     const cancelTaskBtn = document.getElementById('cancel-add-task');
 
@@ -36,10 +37,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const editTaskIdInput = document.getElementById('edit-task-id-input');
     const editTaskDescInput = document.getElementById('edit-task-desc-input');
     const editTaskDueDateInput = document.getElementById('edit-task-due-date-input');
+    const editTaskPriorityToggle = document.getElementById('edit-task-priority-toggle'); // NEU
     const saveEditTaskBtn = document.getElementById('save-edit-task');
     const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
 
-    // NEU: Felder "Fach löschen"
+    // Felder "Fach löschen"
     const deleteSubjectIdInput = document.getElementById('delete-subject-id-input');
     const deleteSubjectName = document.getElementById('delete-subject-name');
     const cancelDeleteSubjectBtn = document.getElementById('cancel-delete-subject');
@@ -49,8 +51,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const LIST_VIEW_ICON = `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 96 960 960" width="24"><path d="M440 856V616H200v240h240Zm320 0V616H520v240h240ZM200 536V296h240v240H200Zm320 0V296h240v240H520Z"/></svg>`;
     const COLUMN_VIEW_ICON = `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 96 960 960" width="24"><path d="M200 856V296h120v560H200Zm240 0V296h120v560H440Zm240 0V296h120v560H680Z"/></svg>`;
     
-    // NEU: Icon für Lösch-Knopf
+    // Icon für Lösch-Knopf
     const DELETE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 96 960 960" width="24"><path d="M280 936q-33 0-56.5-23.5T200 856V336h-40v-80h200v-40h320v40h200v80h-40v520q0 33-23.5 56.5T680 936H280Zm400-600H280v520h400V336ZM360 776h80V416h-80v360Zm160 0h80V416h-80v360ZM280 336v520-520Z"/></svg>`;
+
+    // NEU: Icon für "Wichtig" auf der Task-Karte
+    const PRIORITY_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 96 960 960" width="24"><path d="M480 976q-33 0-56.5-23.5T400 896q0-33 23.5-56.5T480 816q33 0 56.5 23.5T560 896q0 33-23.5 56.5T480 976Zm-40-200v-480h80v480h-80Z"/></svg>`;
 
 
     // --- SPEICHER-PERSISTENZ ANFORDERN ---
@@ -170,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // NEU: Funktion zum Löschen eines Fachs UND aller zugehörigen Aufgaben
+    // Funktion zum Löschen eines Fachs UND aller zugehörigen Aufgaben
     function deleteSubjectAndTasks(subjectId) {
         return new Promise(async (resolve, reject) => {
             if (!db) return reject("DB nicht initialisiert");
@@ -216,9 +221,9 @@ document.addEventListener('DOMContentLoaded', () => {
         addSubjectModal.classList.remove('active');
         addTaskModal.classList.remove('active');
         editTaskModal.classList.remove('active');
-        deleteSubjectModal.classList.remove('active'); // NEU
+        deleteSubjectModal.classList.remove('active'); 
         
-        // ... (Formulare zurücksetzen, unverändert) ...
+        // ... (Formulare zurücksetzen) ...
         subjectNameInput.value = '';
         taskDescInput.value = '';
         taskDueDateInput.value = '';
@@ -227,19 +232,30 @@ document.addEventListener('DOMContentLoaded', () => {
         editTaskDescInput.value = '';
         editTaskDueDateInput.value = '';
         
-        // NEU: Lösch-Modal-Felder zurücksetzen
+        // NEU: "Wichtig"-Buttons zurücksetzen
+        addTaskPriorityToggle.classList.remove('active');
+        editTaskPriorityToggle.classList.remove('active');
+        
+        // Lösch-Modal-Felder zurücksetzen
         deleteSubjectIdInput.value = '';
         deleteSubjectName.textContent = '';
     }
 
     async function openEditTaskModal(taskId) {
-        // ... (unverändert) ...
         try {
             const task = await getFromDB('tasks', taskId);
             if (!task) return;
             editTaskIdInput.value = task.id;
             editTaskDescInput.value = task.description;
             editTaskDueDateInput.value = task.dueDate || ''; 
+
+            // NEU: "Wichtig"-Button-Status setzen
+            if (task.isImportant) {
+                editTaskPriorityToggle.classList.add('active');
+            } else {
+                editTaskPriorityToggle.classList.remove('active');
+            }
+
             showModal(editTaskModal);
             editTaskDescInput.focus();
         } catch (error) {
@@ -247,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // NEU: Helper-Funktion zum Öffnen des "Fach löschen"-Modals
+    // Helper-Funktion zum Öffnen des "Fach löschen"-Modals
     async function openDeleteSubjectModal(subjectId) {
         try {
             const subject = await getFromDB('subjects', subjectId);
@@ -264,7 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- RENDER-FUNKTIONEN (ZEICHNEN DER UI) ---
 
-    // NEU: Helper-Funktion zum Sortieren der Tasks
+    // NEU: Helper-Funktion zum Sortieren der Tasks (Feature 2)
     function sortTasks(taskArray) {
         return taskArray.sort((a, b) => {
             // 1. Erledigte (isDone: true) immer nach unten
@@ -272,21 +288,59 @@ document.addEventListener('DOMContentLoaded', () => {
                 return a.isDone ? 1 : -1;
             }
             
-            // 2. Tasks ohne Fälligkeitsdatum (dueDate) nach unten
-            // (aber über die erledigten)
+            // 2. Wichtige (isImportant: true) nach oben (nur bei offenen Tasks)
+            const aImportant = a.isImportant || false; // Handle undefined
+            const bImportant = b.isImportant || false; // Handle undefined
+            if (aImportant !== bImportant) {
+                return aImportant ? -1 : 1; // Wichtige (a) nach oben
+            }
+            
+            // 3. Tasks ohne Fälligkeitsdatum (dueDate) nach unten
             if (a.dueDate && !b.dueDate) return -1; // a hat Datum, b nicht -> a nach oben
             if (!a.dueDate && b.dueDate) return 1;  // a hat kein Datum, b schon -> a nach unten
             if (!a.dueDate && !b.dueDate) return 0; // beide haben kein Datum -> Reihenfolge egal
 
-            // 3. Nach Datum sortieren (älteste zuerst)
+            // 4. Nach Datum sortieren (älteste zuerst)
             return new Date(a.dueDate) - new Date(b.dueDate);
         });
     }
 
+    // NEU: Helper-Funktion zum Sortieren der Listen (Feature 1)
+    function sortSubjects(subjectArray, allTasks) {
+        // 1. Status für jede Liste ermitteln
+        const subjectsWithStatus = subjectArray.map(subject => {
+            const tasksForSubject = allTasks.filter(t => t.subjectId === subject.id);
+            const hasTasks = tasksForSubject.length > 0;
+            const hasOpenTasks = tasksForSubject.some(t => !t.isDone);
+            
+            let sortGroup;
+            if (hasOpenTasks) {
+                sortGroup = 1; // 1. Gruppe: Hat offene Tasks
+            } else if (hasTasks) {
+                sortGroup = 2; // 2. Gruppe: Hat Tasks, aber alle erledigt
+            } else {
+                sortGroup = 3; // 3. Gruppe: Leer
+            }
+            
+            return { ...subject, sortGroup }; // Original-Fach + Sortiergruppe
+        });
+
+        // 2. Sortieren
+        return subjectsWithStatus.sort((a, b) => {
+            // Zuerst nach Gruppe
+            if (a.sortGroup !== b.sortGroup) {
+                return a.sortGroup - b.sortGroup;
+            }
+            // Innerhalb der Gruppe alphabetisch nach Name
+            return a.name.localeCompare(b.name);
+        });
+    }
+
+
     async function loadAndRenderAll() {
         const expandedSubjectIds = new Set(
             [...document.querySelectorAll('.subject-balken.expanded')]
-                .map(balken => balken.dataset.subjectId) // Speichert jetzt Strings (z.B. "1" oder "overall")
+                .map(balken => balken.dataset.subjectId) 
         );
 
         try {
@@ -295,15 +349,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 getAllFromDB('tasks')
             ]);
             
-            renderListView(subjects, tasks, expandedSubjectIds);
-            renderColumnView(subjects, tasks);
+            // NEU: Listen sortieren (Feature 1)
+            const sortedSubjects = sortSubjects(subjects, tasks);
+            
+            renderListView(sortedSubjects, tasks, expandedSubjectIds);
+            renderColumnView(sortedSubjects, tasks);
 
         } catch (error) {
             console.error('Fehler beim Laden und Rendern:', error);
         }
     }
 
-    // GEÄNDERT: Akzeptiert jetzt `subjectName` für die "Gesamt"-Liste
+    // GEÄNDERT: Akzeptiert "Wichtig"-Status (Feature 2)
     function createTaskElement(task, subjectName = null) {
         const taskCard = document.createElement('div');
         taskCard.className = 'task-card';
@@ -311,12 +368,23 @@ document.addEventListener('DOMContentLoaded', () => {
         if (task.isDone) {
             taskCard.classList.add('is-done');
         }
+        // NEU: "Wichtig"-Klasse hinzufügen
+        if (task.isImportant) {
+            taskCard.classList.add('is-important');
+        }
 
-        // NEU: Fügt den Fachnamen hinzu, falls übergeben
+
+        // Fügt den Fachnamen hinzu, falls übergeben
         let subjectNameHtml = '';
         if (subjectName) {
             subjectNameHtml = `<div class="task-subject-name">${subjectName}</div>`;
         }
+        
+        // NEU: "Wichtig"-Icon hinzufügen
+        let priorityIconHtml = task.isImportant 
+            ? `<span class="task-priority-icon" title="Wichtig">!</span>` 
+            : '';
+
 
         let dueDateHtml = '';
         if (task.dueDate) {
@@ -328,7 +396,9 @@ document.addEventListener('DOMContentLoaded', () => {
         taskCard.innerHTML = `
             <input type="checkbox" class="task-checkbox" ${task.isDone ? 'checked' : ''}>
             <div class="task-details" title="Aufgabe bearbeiten">
-                ${subjectNameHtml} <div class="task-description">${task.description}</div>
+                ${subjectNameHtml}
+                <div class="task-description">
+                    ${priorityIconHtml} <span>${task.description}</span> </div>
                 ${dueDateHtml}
             </div>
             <button class="delete-task-btn" title="Aufgabe löschen">X</button>
@@ -336,23 +406,23 @@ document.addEventListener('DOMContentLoaded', () => {
         return taskCard;
     }
 
-    // STARK GEÄNDERT: Fügt "Gesamt"-Liste, Sortierung und Lösch-Knopf hinzu
+    // GEÄNDERT: Nutzt sortierte `subjects`
     function renderListView(subjects, tasks, expandedSubjectIds = new Set()) {
         listView.innerHTML = '';
 
-        // --- 1. NEU: "Gesamt"-Liste ---
+        // --- 1. "Gesamt"-Liste ---
         const allIncompleteTasks = tasks.filter(t => !t.isDone);
-        const sortedOverallTasks = sortTasks(allIncompleteTasks); // Nur sortieren, da alle !isDone
+        const sortedOverallTasks = sortTasks(allIncompleteTasks); 
 
         const overallBalken = document.createElement('div');
         overallBalken.className = 'subject-balken';
-        overallBalken.id = 'overall-list-balken'; // Für spezielles Styling
-        overallBalken.dataset.subjectId = 'overall'; // Spezielle ID
+        overallBalken.id = 'overall-list-balken'; 
+        overallBalken.dataset.subjectId = 'overall'; 
 
         if (expandedSubjectIds.has('overall')) {
             overallBalken.classList.add('expanded');
         }
-
+        // (Rest der "Gesamt"-Liste unverändert)
         overallBalken.innerHTML = `
             <div class="balken-header">
                 <span class="subject-name">Alle offenen Aufgaben</span>
@@ -361,16 +431,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button class="add-task-btn" title="Neue Aufgabe">+</button>
             </div>
         `;
-
         const overallTaskList = document.createElement('div');
         overallTaskList.className = 'task-list-collapsible';
-        
         if (sortedOverallTasks.length > 0) {
             sortedOverallTasks.forEach(task => {
-                // Den Fachnamen für den Task finden
                 const subject = subjects.find(s => s.id === task.subjectId);
                 const subjectName = subject ? subject.name : 'Unbekannt';
-                // Task-Element mit Fachnamen erstellen
                 overallTaskList.appendChild(createTaskElement(task, subjectName));
             });
         } else {
@@ -382,15 +448,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
         // --- 2. Reguläre Fächer-Listen ---
+        // (Nutzt jetzt die vorsortierte `subjects`-Liste von Feature 1)
         if (subjects.length === 0 && allIncompleteTasks.length === 0) {
             listView.innerHTML = '<p class="empty-state">Noch keine To-Do Liste. Füge oben rechts (+) eine Liste hinzu.</p>';
             return;
         }
 
-        subjects.forEach(subject => {
+        subjects.forEach(subject => { // Diese `subjects` sind bereits sortiert!
             const tasksForSubject = tasks.filter(t => t.subjectId === subject.id);
-            // NEU: Tasks sortieren
-            const sortedTasks = sortTasks(tasksForSubject);
+            const sortedTasks = sortTasks(tasksForSubject); // Tasks sortieren (Feature 2)
             
             const doneCount = tasksForSubject.filter(t => t.isDone).length;
             const totalCount = tasksForSubject.length;
@@ -399,11 +465,11 @@ document.addEventListener('DOMContentLoaded', () => {
             balken.className = 'subject-balken';
             balken.dataset.subjectId = subject.id;
             
-            if (expandedSubjectIds.has(String(subject.id))) { // ID zu String konvertieren
+            if (expandedSubjectIds.has(String(subject.id))) { 
                 balken.classList.add('expanded');
             }
 
-            // NEU: Lösch-Knopf hinzugefügt
+            // Lösch-Knopf
             balken.innerHTML = `
                 <div class="balken-header">
                     <span class="subject-name">${subject.name}</span>
@@ -416,10 +482,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const taskList = document.createElement('div');
             taskList.className = 'task-list-collapsible';
             
-            // NEU: Sortierte Liste verwenden
             if (sortedTasks.length > 0) {
                 sortedTasks.forEach(task => {
-                    taskList.appendChild(createTaskElement(task, null)); // Ohne Fachnamen
+                    taskList.appendChild(createTaskElement(task, null)); 
                 });
             } else {
                 taskList.innerHTML = '<p class="empty-task-list">Du hast noch keine Aufgabe hinzugefügt.</p>';
@@ -430,7 +495,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // STARK GEÄNDERT: Fügt Sortierung und Lösch-Knopf hinzu
+    // GEÄNDERT: Nutzt sortierte `subjects`
     function renderColumnView(subjects, tasks) {
         columnView.innerHTML = '';
 
@@ -438,12 +503,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        subjects.forEach(subject => {
+        subjects.forEach(subject => { // Diese `subjects` sind bereits sortiert!
             const column = document.createElement('div');
             column.className = 'subject-column';
             column.dataset.subjectId = subject.id; 
 
-            // NEU: Lösch-Knopf hinzugefügt
+            // Lösch-Knopf
             column.innerHTML = `
                 <button class="delete-subject-btn" title="Liste löschen">${DELETE_ICON}</button>
                 <h2>${subject.name}</h2>
@@ -454,13 +519,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const taskList = column.querySelector('.task-list');
             const tasksForSubject = tasks.filter(t => t.subjectId === subject.id);
-            // NEU: Tasks sortieren
-            const sortedTasks = sortTasks(tasksForSubject);
+            const sortedTasks = sortTasks(tasksForSubject); // Tasks sortieren (Feature 2)
 
-            // NEU: Sortierte Liste verwenden
             if (sortedTasks.length > 0) {
                 sortedTasks.forEach(task => {
-                    taskList.appendChild(createTaskElement(task, null)); // Ohne Fachnamen
+                    taskList.appendChild(createTaskElement(task, null));
                 });
             } else {
                 taskList.innerHTML = '<p class="empty-task-list">Keine Aufgaben.</p>';
@@ -473,7 +536,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- EVENT-LISTENER (BENUTZER-AKTIONEN) ---
 
-    // STARK GEÄNDERT: Fügt Handler für Lösch-Modals hinzu
+    // GEÄNDERT: Fügt Listener für "Wichtig"-Buttons hinzu
     function setupEventListeners() {
 
         // --- Header-Buttons ---
@@ -504,7 +567,16 @@ document.addEventListener('DOMContentLoaded', () => {
         cancelTaskBtn.addEventListener('click', hideModals);
         modalBackdrop.addEventListener('click', hideModals);
         cancelEditTaskBtn.addEventListener('click', hideModals); 
-        cancelDeleteSubjectBtn.addEventListener('click', hideModals); // NEU
+        cancelDeleteSubjectBtn.addEventListener('click', hideModals); 
+
+        // NEU: "Wichtig"-Button Toggles
+        addTaskPriorityToggle.addEventListener('click', () => {
+            addTaskPriorityToggle.classList.toggle('active');
+        });
+        editTaskPriorityToggle.addEventListener('click', () => {
+            editTaskPriorityToggle.classList.toggle('active');
+        });
+
 
         // Modal "Neues Fach" SPEICHERN
         saveSubjectBtn.addEventListener('click', async () => {
@@ -521,12 +593,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Modal "Neue Aufgabe" SPEICHERN
         saveTaskBtn.addEventListener('click', async () => {
-            // ... (unverändert) ...
             const description = taskDescInput.value.trim();
             const dueDate = taskDueDateInput.value;
             const subjectId = parseInt(taskSubjectIdInput.value); 
+            // NEU: "Wichtig"-Status auslesen
+            const isImportant = addTaskPriorityToggle.classList.contains('active');
+            
             if (description && subjectId) {
-                const newTask = { subjectId: subjectId, description: description, dueDate: dueDate || null, isDone: false };
+                const newTask = { 
+                    subjectId: subjectId, 
+                    description: description, 
+                    dueDate: dueDate || null, 
+                    isDone: false,
+                    isImportant: isImportant // NEU
+                };
                 await addToDB('tasks', newTask);
                 hideModals();
                 await loadAndRenderAll(); 
@@ -537,16 +617,21 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Modal "Aufgabe bearbeiten" SPEICHERN
         saveEditTaskBtn.addEventListener('click', async () => {
-            // ... (unverändert) ...
             const id = parseInt(editTaskIdInput.value);
             const description = editTaskDescInput.value.trim();
             const dueDate = editTaskDueDateInput.value;
+            // NEU: "Wichtig"-Status auslesen
+            const isImportant = editTaskPriorityToggle.classList.contains('active');
+
             if (!id || !description) return;
             try {
                 const originalTask = await getFromDB('tasks', id);
                 if (!originalTask) return;
+                
                 originalTask.description = description;
                 originalTask.dueDate = dueDate || null;
+                originalTask.isImportant = isImportant; // NEU
+                
                 await updateInDB('tasks', originalTask);
                 hideModals();
                 await loadAndRenderAll(); 
@@ -555,7 +640,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // NEU: Modal "Fach löschen" BESTÄTIGEN
+        // Modal "Fach löschen" BESTÄTIGEN
         confirmDeleteSubjectBtn.addEventListener('click', async () => {
             const subjectId = parseInt(deleteSubjectIdInput.value);
             if (!subjectId) return;
@@ -572,7 +657,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
         // --- Event Delegation für dynamische Inhalte ---
-        // GEÄNDERT: Fügt Handler für "Fach löschen" hinzu
         document.body.addEventListener('click', async (event) => {
             const target = event.target;
 
@@ -616,13 +700,15 @@ document.addEventListener('DOMContentLoaded', () => {
             // AKTION: Aufgabe bearbeiten (Klick auf .task-details)
             const taskDetails = target.closest('.task-details');
             if (taskDetails) {
-                // Nur auslösen, wenn NICHT in der "Gesamt"-Liste (da dort Klick auf Task=Checkbox)
-                // Oh, warte, der Klick ist ja auf .task-details, nicht auf die Checkbox. Das passt.
+                // Verhindern, dass Klick auf Checkbox das Modal öffnet
+                // (Sollte nicht passieren, da Checkbox ausserhalb ist, aber sicher ist sicher)
+                if (target.classList.contains('task-checkbox')) return; 
+
                 const taskId = parseInt(taskDetails.closest('.task-card').dataset.taskId);
                 await openEditTaskModal(taskId);
             }
             
-            // NEU: AKTION: Fach löschen
+            // AKTION: Fach löschen
             const deleteSubjectBtn = target.closest('.delete-subject-btn');
             if (deleteSubjectBtn) {
                 let subjectId;
@@ -637,9 +723,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 if (subjectId && subjectId !== 'overall') { // "Gesamt"-Liste kann nicht gelöscht werden
                     await openDeleteSubjectModal(parseInt(subjectId));
-                } else if (subjectId === 'overall') {
-                    // Optional: Feedback geben
-                    // alert('Die "Gesamt"-Liste kann nicht gelöscht werden.');
                 }
             }
         });
@@ -664,5 +747,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- INITIALISIERUNG ---
     initDatabase();
     setupEventListeners();
+    requestPersistentStorage(); // Aufruf hinzugefügt (war vorher nicht aufgerufen)
 
 });

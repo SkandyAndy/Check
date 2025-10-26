@@ -1,5 +1,5 @@
-// Name des Caches (wichtig für Versionierung)
-const CACHE_NAME = 'check-app-cache-v1.2';
+// NEU: Name des Caches auf v1.3 geändert, um Update zu erzwingen
+const CACHE_NAME = 'check-app-cache-v1.3';
 
 // Dateien, die für die App-Shell benötigt werden
 const FILES_TO_CACHE = [
@@ -58,7 +58,7 @@ self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys().then((keyList) => {
             return Promise.all(keyList.map((key) => {
-                // Wenn der Cache-Name nicht unser aktueller ist, lösche ihn.
+                // Wenn der Cache-Name nicht unser aktueller (v1.3) ist, lösche ihn.
                 if (key !== CACHE_NAME) {
                     console.log('[ServiceWorker] Lösche alten Cache:', key);
                     return caches.delete(key);

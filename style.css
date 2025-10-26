@@ -7,6 +7,9 @@
     --text-color-light: #8e8e93;
     --header-color: #daddbf;
     --border-color: #000000;
+    /* NEU: Farbe für "Wichtig" */
+    --important-color: #ff3b30; 
+    --important-background-color: #fff0f0;
 }
 
 /* Grund-Reset und Schriftart */
@@ -192,7 +195,22 @@ header button#view-toggle-btn svg {
     border-radius: 8px;
     padding: 12px;
     box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    border-left: 3px solid transparent; /* NEU: Platzhalter für "Wichtig" */
 }
+
+/* NEU: Stil für "Wichtig" */
+.task-card.is-important {
+    background-color: var(--important-background-color);
+    border-left: 3px solid var(--important-color);
+}
+.task-card .task-priority-icon {
+    color: var(--important-color);
+    font-weight: 900;
+    font-size: 1.1rem;
+    margin-right: 6px;
+    display: inline-block; /* Sorgt für korrekten Abstand */
+}
+
 
 .task-card input[type="checkbox"] {
     width: 20px;
@@ -202,10 +220,16 @@ header button#view-toggle-btn svg {
 
 .task-card .task-details {
     flex-grow: 1;
+    /* NEU: Damit Icon und Text in einer Zeile bleiben */
+    display: flex; 
+    flex-direction: column;
 }
 
 .task-card .task-description {
     font-size: 0.95rem;
+    /* NEU: Bessere Ausrichtung von Icon und Text */
+    display: flex;
+    align-items: center; 
 }
 
 .task-card .task-due-date {
@@ -219,6 +243,11 @@ header button#view-toggle-btn svg {
     text-decoration: line-through;
     opacity: 0.6;
 }
+
+.task-card.is-done .task-priority-icon {
+    opacity: 0.6; /* NEU: Icon auch ausgrauen */
+}
+
 
 .task-card .delete-task-btn {
     background: none;
@@ -286,12 +315,57 @@ header button#view-toggle-btn svg {
     font-size: 1rem;
     margin-bottom: 16px;
 }
+
+/* NEU: Wrapper für Datum und "Wichtig"-Button */
+.task-modal-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+.task-modal-options .date-option {
+    flex-grow: 1;
+}
+.task-modal-options .date-option input[type="date"] {
+    margin-bottom: 0; /* Ältere Regel überschreiben */
+}
 .modal label {
     font-size: 0.8rem;
     color: var(--text-color-light);
     margin-bottom: 4px;
     display: block;
 }
+
+/* NEU: "Wichtig"-Button im Modal */
+.priority-toggle-btn {
+    flex-shrink: 0;
+    width: 46px; /* Höhe = padding(12*2) + font-size(22) -> ~46px */
+    height: 46px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background-color: #e5e5e5;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.priority-toggle-btn svg {
+    fill: var(--text-color-light);
+    width: 24px;
+    height: 24px;
+    transition: fill 0.2s ease;
+}
+
+/* "Wichtig"-Button aktiv */
+.priority-toggle-btn.active {
+    background-color: var(--important-background-color);
+    border-color: var(--important-color);
+}
+.priority-toggle-btn.active svg {
+    fill: var(--important-color);
+}
+
 
 .modal .modal-actions {
     display: flex;
