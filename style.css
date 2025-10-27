@@ -502,3 +502,165 @@ header button#view-toggle-btn svg {
     background-color: #ff3b30; /* Roter Knopf */
     color: white;
 }
+
+/* 7. NEUE STILE FÜR EINSTELLUNGEN & BACKUP */
+
+/* Header-Icons */
+header button#settings-btn svg {
+    fill: var(--primary-color);
+}
+
+/* Visuell verstecken (für file input) */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+/* Backup-Erinnerungs-Banner */
+.reminder-banner {
+    /* display: none; wird per inline-style gesetzt */
+    position: sticky;
+    top: 60px; /* Hängt unter dem fixierten Header */
+    background-color: #fff3cd; /* Warmes Gelb */
+    color: #664d03;
+    padding: 12px 16px;
+    z-index: 99;
+    border-bottom: 1px solid #ffe69c;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    gap: 16px; /* Abstand zwischen Text und Buttons */
+}
+.reminder-banner span {
+    flex-grow: 1; /* Text nimmt verfügbaren Platz ein */
+}
+.reminder-banner div {
+    flex-shrink: 0; /* Buttons nicht quetschen */
+    display: flex;
+    gap: 8px;
+}
+.reminder-banner button {
+    background: none;
+    border: 1px solid #664d03;
+    color: #664d03;
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-weight: 500;
+}
+.reminder-banner button#backup-reminder-close-btn {
+    border: none;
+    font-size: 1.2rem;
+    padding: 2px;
+    font-weight: bold;
+    line-height: 1;
+}
+
+/* Einstellungs-Seite */
+#settings-view {
+    padding: 0; /* Wir nutzen das Padding der Sektionen */
+}
+
+.settings-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    /* Klebt oben in der View, aber unter dem Banner */
+    position: sticky; 
+    top: 60px; /* Oder 110px wenn Banner da ist? JS muss das evtl. anpassen */
+    /* Vorerst einfacher: kein sticky header */
+    border-bottom: 1px solid var(--border-color);
+    background-color: #f9f9f9;
+}
+.settings-header button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+}
+.settings-header button svg {
+    fill: var(--text-color);
+}
+.settings-header h2 {
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+.settings-section {
+    background-color: var(--card-color);
+    border-radius: 12px;
+    padding: 16px;
+    margin: 16px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.settings-section h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+.settings-section p {
+    font-size: 0.9rem;
+    color: var(--text-color-light);
+    margin-bottom: 16px;
+    line-height: 1.4;
+}
+.settings-section code {
+    background-color: #e5e5e5;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.settings-action-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    background-color: var(--primary-color);
+    color: white;
+}
+.settings-action-btn.import {
+    background-color: #e5e5e5;
+    color: var(--text-color);
+}
+
+/* NEU: Stile für Patchnotes-Liste */
+.patch-notes-list {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 16px;
+}
+.patch-notes-list > li {
+    margin-bottom: 12px;
+}
+.patch-notes-list strong {
+    font-weight: 600;
+}
+
+/* Verschachtelte Liste für die einzelnen Änderungen */
+.patch-notes-list ul {
+    list-style: disc;
+    padding-left: 20px;
+    margin-top: 6px;
+}
+.patch-notes-list ul li {
+    font-size: 0.9rem;
+    color: var(--text-color);
+    margin-bottom: 4px;
+    line-height: 1.4;
+}
