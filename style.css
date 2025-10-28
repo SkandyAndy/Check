@@ -23,7 +23,6 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     background-image: linear-gradient(to right, #478dcfb0, #245463b9);
     color: var(--text-color);
-    /* Wichtig, damit der Header Platz hat */
     padding-top: 60px;
 }
 
@@ -51,19 +50,31 @@ header h1 {
 header .header-buttons {
     display: flex;
     gap: 8px;
+    align-items: center;
 }
 
 header button {
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 1.8rem;
     font-weight: 300;
     color: var(--primary-color);
     padding: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 32px; 
+    height: 32px;
+}
+
+/* Grosse Schriftart NUR für den Plus-Button */
+header button#add-subject-btn {
+    font-size: 1.8rem;
+    font-weight: 300;
+    width: auto;
+    height: auto;
+    line-height: 1; 
+    padding-bottom: 4px;
 }
 
 header button#view-toggle-btn svg {
@@ -72,11 +83,11 @@ header button#view-toggle-btn svg {
 
 /* 2. Ansichten-Container */
 .view {
-    display: none; /* Standardmässig versteckt */
+    display: none; 
     padding: 16px;
 }
 .view.active {
-    display: block; /* Aktive Ansicht wird gezeigt */
+    display: block;
 }
 
 /* 3. Ansicht 1: "Balken"-Ansicht */
@@ -116,7 +127,7 @@ header button#view-toggle-btn svg {
     font-size: 1.2rem;
     font-weight: 500;
     cursor: pointer;
-    flex-shrink: 0; /* Verhindert, dass der Button gequetscht wird */
+    flex-shrink: 0; 
 }
 
 /* Akkordeon-Effekt */
