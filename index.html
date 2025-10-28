@@ -124,19 +124,38 @@
         </div>
     </div>
 
-    <div id="add-task-modal" class="modal">
+<div id="add-task-modal" class="modal">
         <h2>Neue Aufgabe</h2>
         <input type="hidden" id="task-subject-id-input">
         
-        <input type="text" id="task-desc-input" placeholder="Neue Aufgabe">
+        <label for="add-task-title-input">Titel</label>
+        <input type="text" id="add-task-title-input" placeholder="Aufgabenname">
         
-        <div class="task-modal-options"> <div class="date-option">
-                <label for="task-due-date-input">Fällig bis:</label>
-                <input type="date" id="task-due-date-input">
+        <label for="add-task-notes-input">Notizen</label>
+        <textarea id="add-task-notes-input" placeholder="(Optional)"></textarea>
+        
+        <div class="task-modal-options">
+            <div class="date-option">
+                <label for="add-task-due-date-input">Fällig bis:</label>
+                <input type="date" id="add-task-due-date-input">
+            </div>
+            <div class="time-option">
+                <label for="add-task-due-time-input">Uhrzeit:</label>
+                <input type="time" id="add-task-due-time-input">
             </div>
             <button type="button" id="add-task-priority-toggle" class="priority-toggle-btn" title="Als wichtig markieren">
                 <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 96 960 960" width="24"><path d="M480 976q-33 0-56.5-23.5T400 896q0-33 23.5-56.5T480 816q33 0 56.5 23.5T560 896q0 33-23.5 56.5T480 976Zm-40-200v-480h80v480h-80Z"/></svg>
             </button>
+        </div>
+
+        <div class="checklist-editor">
+            <label>Checkliste (Optional)</label>
+            <div class="checklist-input-group">
+                <input type="text" id="add-checklist-item-input" placeholder="Neuer Checklisten-Punkt">
+                <button type="button" id="add-checklist-item-btn" title="Hinzufügen">+</button>
+            </div>
+            <ul class="checklist-items-list" id="add-checklist-items-list">
+                </ul>
         </div>
 
         <div class="modal-actions">
@@ -149,17 +168,36 @@
         <h2>Aufgabe bearbeiten</h2>
         <input type="hidden" id="edit-task-id-input">
             
-        <input type="text" id="edit-task-desc-input" placeholder="Neue Aufgabe">
+        <label for="edit-task-title-input">Titel</label>
+        <input type="text" id="edit-task-title-input" placeholder="Titel der Aufgabe">
 
-        <div class="task-modal-options"> <div class="date-option">
+        <label for="edit-task-notes-input">Notizen</label>
+        <textarea id="edit-task-notes-input" placeholder="Details, Links oder Beschreibungen..."></textarea>
+
+        <div class="task-modal-options">
+            <div class="date-option">
                 <label for="edit-task-due-date-input">Fällig bis:</label>
                 <input type="date" id="edit-task-due-date-input">
+            </div>
+            <div class="time-option">
+                <label for="edit-task-due-time-input">Uhrzeit:</label>
+                <input type="time" id="edit-task-due-time-input">
             </div>
             <button type="button" id="edit-task-priority-toggle" class="priority-toggle-btn" title="Als wichtig markieren">
                 <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 96 960 960" width="24"><path d="M480 976q-33 0-56.5-23.5T400 896q0-33 23.5-56.5T480 816q33 0 56.5 23.5T560 896q0 33-23.5 56.5T480 976Zm-40-200v-480h80v480h-80Z"/></svg>
             </button>
         </div>
             
+        <div class="checklist-editor">
+            <label>Checkliste</label>
+            <div class="checklist-input-group">
+                <input type="text" id="edit-checklist-item-input" placeholder="Neuer Checklisten-Punkt">
+                <button type="button" id="edit-checklist-item-btn" title="Hinzufügen">+</button>
+            </div>
+            <ul class="checklist-items-list" id="edit-checklist-items-list">
+                </ul>
+        </div>
+
         <div class="modal-actions">
             <button id="cancel-edit-task">Abbrechen</button>
             <button id="save-edit-task">Speichern</button>

@@ -2,67 +2,90 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- VARIABLEN & DOM-ELEMENTE ---
 
-    const APP_VERSION = '1.4';
+    const APP_VERSION = '1.5'; // NEU: Versionsnummer
     let db;
     let currentView = 'list';
-    let lastActiveView = 'list'; // NEU: Für Einstellungs-Navigation
+    let lastActiveView = 'list';
+    
+    // NEU: UUID-Generator (für Checklisten-Einträge)
+    function generateUUID() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
 
     // Header
     const viewToggleBtn = document.getElementById('view-toggle-btn');
     const addSubjectBtn = document.getElementById('add-subject-btn');
-    const settingsBtn = document.getElementById('settings-btn'); // NEU
+    const settingsBtn = document.getElementById('settings-btn'); 
 
     // Ansichten
     const listView = document.getElementById('list-view');
     const columnView = document.getElementById('column-view');
-    const settingsView = document.getElementById('settings-view'); // NEU
+    const settingsView = document.getElementById('settings-view'); 
     
-    // NEU: Einstellungs-Seite Elemente
+    // Einstellungs-Seite
     const settingsBackBtn = document.getElementById('settings-back-btn');
     const exportDataBtn = document.getElementById('export-data-btn');
     const importDataBtn = document.getElementById('import-data-btn');
     const importFileInput = document.getElementById('import-file-input');
     const appVersionDisplay = document.getElementById('app-version-display');
 
-    // NEU: Backup-Erinnerung
+    // Backup-Erinnerung
     const backupReminder = document.getElementById('backup-reminder');
     const backupReminderBtn = document.getElementById('backup-reminder-btn');
     const backupReminderCloseBtn = document.getElementById('backup-reminder-close-btn');
 
     // Modals
     const modalBackdrop = document.getElementById('modal-backdrop');
-    // ... (alle Modal-Variablen bleiben gleich) ...
     const addSubjectModal = document.getElementById('add-subject-modal');
     const addTaskModal = document.getElementById('add-task-modal');
     const editTaskModal = document.getElementById('edit-task-modal');
     const deleteSubjectModal = document.getElementById('delete-subject-modal'); 
 
-    // ... (alle Modal-Feld-Variablen bleiben gleich) ...
+    // Felder "Neues Fach"
     const subjectNameInput = document.getElementById('subject-name-input');
     const saveSubjectBtn = document.getElementById('save-add-subject');
     const cancelSubjectBtn = document.getElementById('cancel-add-subject');
-    const taskSubjectIdInput = document.getElementById('task-subject-id-input');
-    const taskDescInput = document.getElementById('task-desc-input');
-    const taskDueDateInput = document.getElementById('task-due-date-input');
-    const addTaskPriorityToggle = document.getElementById('add-task-priority-toggle'); 
-    const saveTaskBtn = document.getElementById('save-add-task');
-    const cancelTaskBtn = document.getElementById('cancel-add-task');
-    const editTaskIdInput = document.getElementById('edit-task-id-input');
-    const editTaskDescInput = document.getElementById('edit-task-desc-input');
-    const editTaskDueDateInput = document.getElementById('edit-task-due-date-input');
-    const editTaskPriorityToggle = document.getElementById('edit-task-priority-toggle'); 
-    const saveEditTaskBtn = document.getElementById('save-edit-task');
-    const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
+
+const taskSubjectIdInput = document.getElementById('task-subject-id-input');
+const addTaskTitleInput = document.getElementById('add-task-title-input'); // Alt: taskDescInput
+const addTaskNotesInput = document.getElementById('add-task-notes-input'); // NEU
+const addTaskDueDateInput = document.getElementById('add-task-due-date-input'); // Alt: taskDueDateInput
+const addTaskDueTimeInput = document.getElementById('add-task-due-time-input'); // NEU
+const addTaskPriorityToggle = document.getElementById('add-task-priority-toggle');
+const addChecklistItemInput = document.getElementById('add-checklist-item-input'); // NEU
+const addChecklistItemBtn = document.getElementById('add-checklist-item-btn'); // NEU
+const addChecklistItemsList = document.getElementById('add-checklist-items-list'); // NEU
+const saveTaskBtn = document.getElementById('save-add-task');
+const cancelTaskBtn = document.getElementById('cancel-add-task');
+
+// --- Felder "Aufgabe bearbeiten" ---
+const editTaskIdInput = document.getElementById('edit-task-id-input');
+const editTaskTitleInput = document.getElementById('edit-task-title-input'); // Alt: editTaskDescInput
+const editTaskNotesInput = document.getElementById('edit-task-notes-input'); // NEU
+const editTaskDueDateInput = document.getElementById('edit-task-due-date-input'); // Alt: editTaskDueDateInput
+const editTaskDueTimeInput = document.getElementById('edit-task-due-time-input'); // NEU
+const editTaskPriorityToggle = document.getElementById('edit-task-priority-toggle');
+const editChecklistItemInput = document.getElementById('edit-checklist-item-input'); // NEU
+const editChecklistItemBtn = document.getElementById('edit-checklist-item-btn'); // NEU
+const editChecklistItemsList = document.getElementById('edit-checklist-items-list'); // NEU
+const saveEditTaskBtn = document.getElementById('save-edit-task');
+const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
+
+    // Felder "Fach löschen"
     const deleteSubjectIdInput = document.getElementById('delete-subject-id-input');
     const deleteSubjectName = document.getElementById('delete-subject-name');
     const cancelDeleteSubjectBtn = document.getElementById('cancel-delete-subject');
     const confirmDeleteSubjectBtn = document.getElementById('confirm-delete-subject');
-
-    // ... (Icons bleiben gleich) ...
+    
+    // Icons
     const LIST_VIEW_ICON = `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 96 960 960" width="24"><path d="M440 856V616H200v240h240Zm320 0V616H520v240h240ZM200 536V296h240v240H200Zm320 0V296h240v240H520Z"/></svg>`;
     const COLUMN_VIEW_ICON = `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 96 960 960" width="24"><path d="M200 856V296h120v560H200Zm240 0V296h120v560H440Zm240 0V296h120v560H680Z"/></svg>`;
     const DELETE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 96 960 960" width="24"><path d="M280 936q-33 0-56.5-23.5T200 856V336h-40v-80h200v-40h320v40h200v80h-40v520q0 33-23.5 56.5T680 936H280Zm400-600H280v520h400V336ZM360 776h80V416h-80v360Zm160 0h80V416h-80v360ZM280 336v520-520Z"/></svg>`;
     const PRIORITY_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 96 960 960" width="24"><path d="M480 976q-33 0-56.5-23.5T400 896q0-33 23.5-56.5T480 816q33 0 56.5 23.5T560 896q0 33-23.5 56.5T480 976Zm-40-200v-480h80v480h-80Z"/></svg>`;
+    const EDIT_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 96 960 960" width="20"><path d="M200 856h56l345-345-56-56-345 345v56Zm572-403L602 283l56-56q23-23 56.5-23t56.5 23l56 56q23 23 23 56.5T845 399l-73 73Z"/></svg>`;
 
     // --- SPEICHER-PERSISTENZ ---
     // ... (requestPersistentStorage Funktion bleibt unverändert) ...
@@ -92,20 +115,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function initDatabase() {
         const request = indexedDB.open('SchoolAppDB', 1);
-
-        request.onerror = (event) => {
-            console.error('Datenbank-Fehler:', event.target.error);
-        };
-
+        request.onerror = (event) => console.error('Datenbank-Fehler:', event.target.error);
         request.onsuccess = (event) => {
             db = event.target.result;
             console.log('Datenbank erfolgreich geöffnet.');
             loadAndRenderAll();
-            checkBackupReminder(); // NEU: Backup-Erinnerung prüfen
+            checkBackupReminder();
         };
-
         request.onupgradeneeded = (event) => {
-            // (unverändert)
             let db = event.target.result;
             if (!db.objectStoreNames.contains('subjects')) {
                 db.createObjectStore('subjects', { keyPath: 'id', autoIncrement: true });
@@ -196,10 +213,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- MODAL (POP-UP) STEUERUNG ---
-    // ... (showModal, hideModals, openEditTaskModal, openDeleteSubjectModal bleiben unverändert) ...
+
+    // NEU: Lokaler State für Checklisten im Modal
+    // Wir brauchen das, damit Hinzufügen/Löschen funktioniert, bevor wir "Speichern" klicken.
+    let modalChecklistState = [];
+
     function showModal(modalElement) {
         modalBackdrop.classList.add('active');
         modalElement.classList.add('active');
+        modalChecklistState = [];
     }
 
     function hideModals() {
@@ -207,34 +229,99 @@ document.addEventListener('DOMContentLoaded', () => {
         addSubjectModal.classList.remove('active');
         addTaskModal.classList.remove('active');
         editTaskModal.classList.remove('active');
-        deleteSubjectModal.classList.remove('active'); 
-        subjectNameInput.value = '';
-        taskDescInput.value = '';
-        taskDueDateInput.value = '';
+        deleteSubjectModal.classList.remove('active');
+
+        // Alle "Add Task" Felder zurücksetzen
         taskSubjectIdInput.value = '';
-        editTaskIdInput.value = '';
-        editTaskDescInput.value = '';
-        editTaskDueDateInput.value = '';
+        addTaskTitleInput.value = '';
+        addTaskNotesInput.value = '';
+        addTaskDueDateInput.value = '';
+        addTaskDueTimeInput.value = '';
         addTaskPriorityToggle.classList.remove('active');
+        addChecklistItemInput.value = '';
+        addChecklistItemsList.innerHTML = ''; // Wichtig: Liste leeren
+
+        // Alle "Edit Task" Felder zurücksetzen
+        editTaskIdInput.value = '';
+        editTaskTitleInput.value = '';
+        editTaskNotesInput.value = '';
+        editTaskDueDateInput.value = '';
+        editTaskDueTimeInput.value = '';
         editTaskPriorityToggle.classList.remove('active');
+        editChecklistItemInput.value = '';
+        editChecklistItemsList.innerHTML = ''; // Wichtig: Liste leeren
+
+        // Lösch-Modal-Felder
         deleteSubjectIdInput.value = '';
         deleteSubjectName.textContent = '';
+
+        // Checklisten-State leeren
+        modalChecklistState = [];
+        }
+
+    // --- NEU: Checklisten-Editor im Modal (Logik) ---
+
+    // Diese Funktion rendert die `modalChecklistState` in der <ul>
+    function renderModalChecklist(listElement) {
+        listElement.innerHTML = ''; // Liste leeren
+        modalChecklistState.forEach(item => {
+            const li = document.createElement('li');
+            li.dataset.itemId = item.id;
+            li.innerHTML = `
+                <input type="checkbox" disabled ${item.isDone ? 'checked' : ''}>
+                <span>${item.text}</span>
+                <button type="button" class="delete-item-btn" title="Punkt löschen">X</button>
+            `;
+            listElement.appendChild(li);
+        });
+    }
+
+    function handleAddChecklistItem(inputElement, listElement) {
+        const text = inputElement.value.trim();
+        if (text) {
+            modalChecklistState.push({
+                id: generateUUID(),
+                text: text,
+                isDone: false
+            });
+            inputElement.value = '';
+            renderModalChecklist(listElement);
+        }
+    }
+
+    function handleDeleteChecklistItem(event, listElement) {
+        const deleteBtn = event.target.closest('.delete-item-btn');
+        if (deleteBtn) {
+            const itemId = deleteBtn.parentElement.dataset.itemId;
+            modalChecklistState = modalChecklistState.filter(item => item.id !== itemId);
+            renderModalChecklist(listElement);
+        }
     }
 
     async function openEditTaskModal(taskId) {
         try {
             const task = await getFromDB('tasks', taskId);
             if (!task) return;
+
             editTaskIdInput.value = task.id;
-            editTaskDescInput.value = task.description;
-            editTaskDueDateInput.value = task.dueDate || ''; 
+            // WICHTIG: Altes "description"-Feld wird zu "title"
+            editTaskTitleInput.value = task.title || task.description || ''; // Fängt alte Tasks ab
+            editTaskNotesInput.value = task.notes || ''; // Neues Feld
+            editTaskDueDateInput.value = task.dueDate || '';
+            editTaskDueTimeInput.value = task.dueTime || ''; // Neues Feld
+
             if (task.isImportant) {
                 editTaskPriorityToggle.classList.add('active');
             } else {
                 editTaskPriorityToggle.classList.remove('active');
             }
+
+            // Checkliste laden
+            modalChecklistState = [...(task.checklist || [])]; // Kopiert das Array
+            renderModalChecklist(editChecklistItemsList); // Zeichnet die Liste im Modal
+
             showModal(editTaskModal);
-            editTaskDescInput.focus();
+            editTaskTitleInput.focus();
         } catch (error) {
             console.error('Fehler beim Öffnen des Edit-Modals:', error);
         }
@@ -253,21 +340,34 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- RENDER-FUNKTIONEN (ZEICHNEN DER UI) ---
-    // ... (sortTasks, sortSubjects, loadAndRenderAll, createTaskElement, renderListView, renderColumnView bleiben unverändert) ...
+    // NEU: Task-Sortierung (inkl. Uhrzeit)
     function sortTasks(taskArray) {
         return taskArray.sort((a, b) => {
-            if (a.isDone !== b.isDone) {
-                return a.isDone ? 1 : -1;
-            }
+            // 1. Erledigte nach unten
+            if (a.isDone !== b.isDone) return a.isDone ? 1 : -1;
+
+            // 2. Wichtige nach oben (nur bei offenen Tasks)
             const aImportant = a.isImportant || false;
             const bImportant = b.isImportant || false;
-            if (aImportant !== bImportant) {
-                return aImportant ? -1 : 1;
+            if (aImportant !== bImportant) return aImportant ? -1 : 1;
+
+            // 3. Nach Datum (und Uhrzeit)
+            const aDate = a.dueDate;
+            const bDate = b.dueDate;
+            const aTime = a.dueTime || '00:00'; // Standardzeit für Sortierung
+            const bTime = b.dueTime || '00:00';
+
+            if (aDate && !bDate) return -1;
+            if (!aDate && bDate) return 1;
+
+            if (aDate && bDate) {
+                if (aDate !== bDate) {
+                    return new Date(aDate) - new Date(bDate); // Ältestes Datum zuerst
+                }
+                // Daten sind gleich, prüfe Uhrzeit
+                return aTime.localeCompare(bTime); // Früheste Uhrzeit zuerst
             }
-            if (a.dueDate && !b.dueDate) return -1;
-            if (!a.dueDate && b.dueDate) return 1;
-            if (!a.dueDate && !b.dueDate) return 0;
-            return new Date(a.dueDate) - new Date(b.dueDate);
+            return 0; // Beide haben kein Datum
         });
     }
 
@@ -316,39 +416,90 @@ document.addEventListener('DOMContentLoaded', () => {
         const taskCard = document.createElement('div');
         taskCard.className = 'task-card';
         taskCard.dataset.taskId = task.id;
-        if (task.isDone) {
-            taskCard.classList.add('is-done');
+        if (task.isDone) taskCard.classList.add('is-done');
+        if (task.isImportant) taskCard.classList.add('is-important');
+
+        const title = task.title || task.description || 'Unbenannte Aufgabe';
+        const notes = task.notes || '';
+        const checklist = task.checklist || [];
+
+        // Checklisten-Zähler
+        let checklistCounterHtml = '';
+        if (checklist.length > 0) {
+            const doneCount = checklist.filter(item => item.isDone).length;
+            checklistCounterHtml = `<span class="checklist-counter" title="Checkliste">${doneCount}/${checklist.length}</span>`;
         }
-        if (task.isImportant) {
-            taskCard.classList.add('is-important');
-        }
-        let subjectNameHtml = '';
-        if (subjectName) {
-            subjectNameHtml = `<div class="task-subject-name">${subjectName}</div>`;
-        }
-        let priorityIconHtml = task.isImportant 
-            ? `<span class="task-priority-icon" title="Wichtig">!</span>` 
-            : '';
-        let dueDateHtml = '';
+
+        // "Wichtig"-Icon
+        let priorityIconHtml = task.isImportant ? `<span class="task-priority-icon" title="Wichtig">!</span>` : '';
+
+        // Datums/Uhrzeit-Text
+        let dueDateTimeHtml = '';
         if (task.dueDate) {
             const date = new Date(task.dueDate + 'T00:00:00');
-            const formattedDate = date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
-            dueDateHtml = `<div class="task-due-date">Fällig am: ${formattedDate}</div>`;
+            const dateString = date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const timeString = task.dueTime ? `, ${task.dueTime} Uhr` : '';
+            dueDateTimeHtml = `<div class="task-due-date">Fällig am: ${dateString}${timeString}</div>`;
         }
+
+        // Notizen
+        let notesHtml = notes ? `<p class="task-notes-preview">${notes}</p>` : '';
+
+        // Checkliste
+        let checklistHtml = '';
+        if (checklist.length > 0) {
+            checklistHtml = '<ul class="task-checklist-preview">';
+            checklist.forEach(item => {
+                checklistHtml += `
+                    <li data-item-id="${item.id}">
+                        <input type="checkbox" class="sub-task-checkbox" ${item.isDone ? 'checked' : ''}>
+                        <span>${item.text}</span>
+                    </li>`;
+            });
+            checklistHtml += '</ul>';
+        }
+
+        // "Mehr..."-Logik
+        const hasCollapsibleContent = !!(dueDateTimeHtml || notesHtml || checklistHtml);
+        if (hasCollapsibleContent) {
+            taskCard.classList.add('has-details');
+        }
+        let moreIndicatorHtml = '';
+        if (hasCollapsibleContent) {
+            // Wir verwenden '...' als einfachen Indikator
+            moreIndicatorHtml = '<span class="more-indicator" title="Details anzeigen">...</span>';
+        }
+
+        // Alles zusammensetzen
         taskCard.innerHTML = `
-            <input type="checkbox" class="task-checkbox" ${task.isDone ? 'checked' : ''}>
-            <div class="task-details" title="Aufgabe bearbeiten">
-                ${subjectNameHtml}
-                <div class="task-description">
-                    ${priorityIconHtml}
-                    <span>${task.description}</span>
+            <div class="task-header">
+                <input type="checkbox" class="task-checkbox" ${task.isDone ? 'checked' : ''}>
+                <div class="task-title-group">
+                    <div class="task-subject-name">${subjectName || ''}</div>
+                    <div class="task-title">
+                        ${priorityIconHtml}
+                        <span>${title}</span>
+                    </div>
                 </div>
-                ${dueDateHtml}
+                ${checklistCounterHtml}
+                ${moreIndicatorHtml} <button class="task-edit-btn" title="Aufgabe bearbeiten">${EDIT_ICON_SVG}</button>
             </div>
-            <button class="delete-task-btn" title="Aufgabe löschen">X</button>
+            ${hasCollapsibleContent ? `
+                <div class="task-collapsible-content">
+                    ${notesHtml}
+                    ${checklistHtml}
+                    ${dueDateTimeHtml}
+                </div>` : ''}
         `;
+
+        // Namen ausblenden, wenn nicht vorhanden (für "Gesamt"-Liste)
+        if (!subjectName) {
+            const subjectNameEl = taskCard.querySelector('.task-subject-name');
+            if (subjectNameEl) subjectNameEl.style.display = 'none';
+        }
         return taskCard;
     }
+
 
     function renderListView(subjects, tasks, expandedSubjectIds = new Set()) {
         listView.innerHTML = '';
@@ -707,36 +858,52 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        // --- "Neue Aufgabe" SPEICHERN ---
         saveTaskBtn.addEventListener('click', async () => {
-            const description = taskDescInput.value.trim();
-            const dueDate = taskDueDateInput.value;
-            const subjectId = parseInt(taskSubjectIdInput.value); 
-            const isImportant = addTaskPriorityToggle.classList.contains('active');
-            if (description && subjectId) {
-                const newTask = { subjectId, description, dueDate: dueDate || null, isDone: false, isImportant };
+            const title = addTaskTitleInput.value.trim(); // Name geändert
+            const subjectId = parseInt(taskSubjectIdInput.value);
+
+            if (title && subjectId) {
+                const newTask = {
+                    subjectId: subjectId,
+                    title: title, // Neues Feld
+                    notes: addTaskNotesInput.value.trim(), // Neues Feld
+                    dueDate: addTaskDueDateInput.value || null,
+                    dueTime: addTaskDueTimeInput.value || null, // Neues Feld
+                    isImportant: addTaskPriorityToggle.classList.contains('active'),
+                    checklist: modalChecklistState, // Neues Feld (aus State)
+                    isDone: false
+                };
                 await addToDB('tasks', newTask);
                 hideModals();
-                await loadAndRenderAll(); 
+                await loadAndRenderAll();
             } else {
-                alert('Bitte eine Beschreibung eingeben.');
+                alert('Bitte mindestens einen Titel eingeben.');
             }
         });
-        
+
+        // --- "Aufgabe bearbeiten" SPEICHERN ---
         saveEditTaskBtn.addEventListener('click', async () => {
             const id = parseInt(editTaskIdInput.value);
-            const description = editTaskDescInput.value.trim();
-            const dueDate = editTaskDueDateInput.value;
-            const isImportant = editTaskPriorityToggle.classList.contains('active');
-            if (!id || !description) return;
+            const title = editTaskTitleInput.value.trim(); // Name geändert
+
+            if (!id || !title) return;
             try {
                 const originalTask = await getFromDB('tasks', id);
                 if (!originalTask) return;
-                originalTask.description = description;
-                originalTask.dueDate = dueDate || null;
-                originalTask.isImportant = isImportant;
+
+                // Alle Felder aktualisieren
+                originalTask.title = title; // Neues Feld
+                originalTask.notes = editTaskNotesInput.value.trim(); // Neues Feld
+                originalTask.dueDate = editTaskDueDateInput.value || null;
+                originalTask.dueTime = editTaskDueTimeInput.value || null; // Neues Feld
+                originalTask.isImportant = editTaskPriorityToggle.classList.contains('active');
+                originalTask.checklist = modalChecklistState; // Neues Feld (aus State)
+                // isDone wird NICHT hier geändert, nur über Checkbox
+
                 await updateInDB('tasks', originalTask);
                 hideModals();
-                await loadAndRenderAll(); 
+                await loadAndRenderAll();
             } catch (error) {
                 console.error('Fehler beim Speichern der Änderungen:', error);
             }
@@ -755,6 +922,27 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        // Checklisten-Editor: "Add Task" Modal
+        addChecklistItemBtn.addEventListener('click', () => {
+            handleAddChecklistItem(addChecklistItemInput, addChecklistItemsList);
+        });
+        addChecklistItemInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') handleAddChecklistItem(addChecklistItemInput, addChecklistItemsList);
+        });
+        addChecklistItemsList.addEventListener('click', (e) => {
+            handleDeleteChecklistItem(e, addChecklistItemsList);
+        });
+
+        // Checklisten-Editor: "Edit Task" Modal
+        editChecklistItemBtn.addEventListener('click', () => {
+            handleAddChecklistItem(editChecklistItemInput, editChecklistItemsList);
+        });
+        editChecklistItemInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') handleAddChecklistItem(editChecklistItemInput, editChecklistItemsList);
+        });
+        editChecklistItemsList.addEventListener('click', (e) => {
+            handleDeleteChecklistItem(e, editChecklistItemsList);
+        });
 
         // --- Event Delegation für dynamische Inhalte ---
         // (Unverändert)
@@ -769,14 +957,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const subjectId = parseInt(addTaskBtnList.closest('.subject-balken').dataset.subjectId);
                 taskSubjectIdInput.value = subjectId; 
                 showModal(addTaskModal);
-                taskDescInput.focus();
+                addTaskTitleInput.focus();
             }
             const addTaskBtnColumn = target.closest('.add-task-btn-column');
             if (addTaskBtnColumn) {
                 const subjectId = parseInt(addTaskBtnColumn.closest('.subject-column').dataset.subjectId);
                 taskSubjectIdInput.value = subjectId; 
                 showModal(addTaskModal);
-                taskDescInput.focus();
+                addTaskTitleInput.focus();
             }
             const deleteTaskBtn = target.closest('.delete-task-btn');
             if (deleteTaskBtn) {
@@ -786,11 +974,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     await loadAndRenderAll(); 
                 }
             }
-            const taskDetails = target.closest('.task-details');
-            if (taskDetails && !target.classList.contains('task-checkbox')) {
-                const taskId = parseInt(taskDetails.closest('.task-card').dataset.taskId);
-                await openEditTaskModal(taskId);
-            }
+
             const deleteSubjectBtn = target.closest('.delete-subject-btn');
             if (deleteSubjectBtn) {
                 let subjectId;
@@ -803,12 +987,30 @@ document.addEventListener('DOMContentLoaded', () => {
                     await openDeleteSubjectModal(parseInt(subjectId));
                 }
             }
+
+            // AKTION: Aufgabe bearbeiten (Klick auf Stift)
+            const taskEditBtn = target.closest('.task-edit-btn');
+            if (taskEditBtn) {
+                const taskId = parseInt(taskEditBtn.closest('.task-card').dataset.taskId);
+                await openEditTaskModal(taskId);
+            }
+
+            // AKTION: Task-Karte auf/zuklappen
+            const taskHeader = target.closest('.task-header');
+            if (taskHeader && !target.closest('button') && !target.closest('input')) { // Nicht auf Buttons/Checkbox
+                const taskCard = taskHeader.closest('.task-card');
+                if (taskCard.classList.contains('has-details')) { // Nur wenn Inhalt da ist
+                    taskCard.classList.toggle('expanded');
+                }
+            }
         });
         
         // Separater Listener für 'change' Events (Checkboxes)
         // (Unverändert)
         document.body.addEventListener('change', async (event) => {
             const target = event.target;
+
+            // AKTION: Haupt-Task Checkbox
             if (target.classList.contains('task-checkbox')) {
                 const taskId = parseInt(target.closest('.task-card').dataset.taskId);
                 const isDone = target.checked;
@@ -816,7 +1018,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (taskToUpdate) {
                     taskToUpdate.isDone = isDone;
                     await updateInDB('tasks', taskToUpdate);
-                    await loadAndRenderAll();
+                    await loadAndRenderAll(); // Neu laden wg. Sortierung
+                }
+            }
+
+            // AKTION: Sub-Task Checkbox
+            if (target.classList.contains('sub-task-checkbox')) {
+                const taskId = parseInt(target.closest('.task-card').dataset.taskId);
+                const subTaskId = target.closest('li').dataset.itemId;
+                const isDone = target.checked;
+
+                const taskToUpdate = await getFromDB('tasks', taskId);
+                if (taskToUpdate && taskToUpdate.checklist) {
+                    const item = taskToUpdate.checklist.find(item => item.id === subTaskId);
+                    if (item) {
+                        item.isDone = isDone;
+                        await updateInDB('tasks', taskToUpdate);
+                        // Optimierung: Nur diese Karte neu zeichnen statt alles
+                        // TODO: Spätere Optimierung
+                        await loadAndRenderAll(); // Vorerst alles neu laden
+                    }
                 }
             }
         });

@@ -7,7 +7,6 @@
     --text-color-light: #8e8e93;
     --header-color: #daddbf;
     --border-color: #000000;
-    /* NEU: Farbe für "Wichtig" */
     --important-color: #ff3b30; 
     --important-background-color: #fff0f0;
 }
@@ -196,86 +195,194 @@ header button#view-toggle-btn svg {
     cursor: pointer;
 }
 
-/* 5. Task-Karten (wird in beiden Ansichten genutzt) */
+
+/* 5. Task-Karten (KOMPLETT ÜBERARBEITET) */
 .task-card {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin: 0 0 7px 0;
     background-color: rgba(255, 252, 243, 0.699);
     border-radius: 8px;
-    padding: 12px;
+    margin: 0 0 7px 0;
     box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    border-left: 3px solid transparent; /* NEU: Platzhalter für "Wichtig" */
+    border-left: 3px solid transparent;
+    /* NEU: Übergang für das Aufklappen */
+    transition: all 0.3s ease-out;
 }
 
-/* NEU: Stil für "Wichtig" */
 .task-card.is-important {
     background-color: var(--important-background-color);
     border-left: 3px solid var(--important-color);
 }
-.task-card .task-priority-icon {
-    color: var(--important-color);
-    font-weight: 900;
-    font-size: 1.1rem;
-    margin-right: 6px;
-    display: inline-block; /* Sorgt für korrekten Abstand */
+
+/* A. Der sichtbare Header der Task-Karte */
+.task-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    cursor: default; /* Standard-Mauszeiger */
 }
 
+/* Klickbar machen, WENN sie Details hat */
+.task-card.has-details .task-header {
+    cursor: pointer;
+}
 
 .task-card input[type="checkbox"] {
     width: 20px;
     height: 20px;
     flex-shrink: 0;
+    margin-top: 2px; /* Kleine Zentrierung */
+    align-self: flex-start; /* Oben ausrichten */
 }
 
-.task-card .task-details {
+.task-title-group {
     flex-grow: 1;
-    /* NEU: Damit Icon und Text in einer Zeile bleiben */
-    display: flex; 
+    display: flex;
     flex-direction: column;
 }
 
-.task-card .task-description {
+.task-title {
     font-size: 0.95rem;
-    /* NEU: Bessere Ausrichtung von Icon und Text */
     display: flex;
     align-items: center; 
 }
 
-.task-card .task-due-date {
-    font-size: 0.8rem;
-    color: var(--text-color-light);
-    margin-top: 4px;
+.task-priority-icon {
+    color: var(--important-color);
+    font-weight: 900;
+    font-size: 1.1rem;
+    margin-right: 6px;
+    display: inline-block;
 }
 
-/* Style für erledigte Tasks */
-.task-card.is-done .task-details {
+/* NEU: "x/y"-Zähler */
+.checklist-counter {
+    font-size: 0.8rem;
+    color: var(--text-color-light);
+    background-color: #e5e5e5;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+/* NEU: Bearbeiten-Button */
+.task-edit-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+}
+.task-edit-btn svg {
+    fill: var(--text-color-light);
+    width: 18px; /* Etwas kleiner als 20px */
+    height: 18px;
+}
+.task-edit-btn:hover {
+    background-color: #e5e5e5;
+}
+.task-edit-btn:hover svg {
+    fill: var(--text-color);
+}
+
+/* NEU: Stil für den "(Mehr...)"-Indikator */
+.more-indicator {
+    font-size: 0.9rem; /* Etwas kleiner */
+    color: var(--text-color-light); /* Hellgrau */
+    font-weight: bold;
+    margin-left: 8px; /* Abstand zum Zähler */
+    padding: 0 4px; /* Kleiner Innenabstand */
+    line-height: 1; /* Bessere vertikale Zentrierung */
+    flex-shrink: 0; /* Verhindert Quetschen */
+}
+
+/* B. Der versteckte, aufklappbare Inhalt */
+.task-collapsible-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    padding: 0 12px; /* Horizontaler Abstand */
+}
+
+/* Zustand, wenn aufgeklappt */
+.task-card.expanded .task-collapsible-content {
+    max-height: 1000px; /* Grosser Wert */
+    padding-bottom: 12px; /* Abstand nach unten */
+    transition: max-height 0.5s ease-in;
+}
+
+/* Stil für die Notizen-Vorschau im aufklappbaren Teil */
+.task-notes-preview {
+    font-size: 0.85rem;
+    color: var(--text-color-light);
+    padding: 4px 0 10px 32px; /* Einrücken (Checkbox-Breite + Lücke) */
+    white-space: pre-wrap; /* Zeilenumbrüche aus <textarea> beibehalten */
+    word-break: break-word;
+    border-bottom: 1px solid #e5e5e5;
+    margin-bottom: 10px;
+}
+
+/* Stil für die Checkliste im aufklappbaren Teil */
+.task-checklist-preview {
+    list-style: none;
+    padding: 0 0 10px 32px; /* Einrücken */
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.task-checklist-preview li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+}
+.task-checklist-preview li input {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+.task-checklist-preview li span {
+    color: var(--text-color);
+}
+/* Durchgestrichen, wenn Sub-Task erledigt */
+.task-checklist-preview li input:checked + span {
     text-decoration: line-through;
     opacity: 0.6;
 }
 
-.task-card.is-done .task-priority-icon {
-    opacity: 0.6; /* NEU: Icon auch ausgrauen */
-}
-
-
-.task-card .delete-task-btn {
-    background: none;
-    border: none;
-    color: #ff3b30; /* Rote Farbe für Löschen */
-    font-size: 1.2rem;
-    font-weight: bold;
-    cursor: pointer;
-    padding: 4px;
-}
-
-/* Regel für "Keine Aufgaben"-Text */
-.empty-task-list {
-    padding: 24px 0; /* Vertikaler "buffer" (Höhe) */
-    text-align: center;
-    font-size: 0.85rem;
+/* Fälligkeitsdatum (jetzt im aufklappbaren Teil) */
+.task-due-date {
+    font-size: 0.8rem;
     color: var(--text-color-light);
+    padding-left: 32px; /* Einrücken */
+    padding-top: 10px;
+    border-top: 1px solid #e5e5e5;
+}
+/* Wenn *nur* Datum da ist (keine Notizen/Checkliste), obere Border entfernen */
+.task-notes-preview + .task-checklist-preview + .task-due-date {
+     border-top: none; /* Komplexer Selektor, evtl. vereinfachen */
+}
+
+
+/* C. Stile für erledigte Tasks (Haupt-Task) */
+.task-card.is-done .task-title-group,
+.task-card.is-done .checklist-counter {
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+.task-card.is-done .task-priority-icon {
+    opacity: 0.6;
+}
+/* Wenn Haupt-Task erledigt, klappbare Inhalte ausblenden */
+.task-card.is-done .task-collapsible-content {
+    display: none;
 }
 
 
@@ -297,7 +404,7 @@ header button#view-toggle-btn svg {
 .modal {
     display: none; /* Versteckt */
     position: fixed;
-    top: 40%;
+    top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     width: 90%;
@@ -307,6 +414,8 @@ header button#view-toggle-btn svg {
     box-shadow: 0 4px 20px rgba(0,0,0,0.2);
     z-index: 1001;
     padding: 20px;
+    max-height: 85vh;
+    overflow-y: auto;
 }
 .modal.active {
     display: block; /* Sichtbar */
@@ -318,13 +427,16 @@ header button#view-toggle-btn svg {
 }
 
 .modal input[type="text"],
-.modal input[type="date"] {
+.modal input[type="date"],
+.modal input[type="time"],
+.modal textarea {
     width: 100%;
     padding: 12px;
     border: 1px solid var(--border-color);
     border-radius: 8px;
     font-size: 1rem;
     margin-bottom: 16px;
+    font-family: inherit;
 }
 
 /* NEU: Wrapper für Datum und "Wichtig"-Button */
@@ -334,11 +446,17 @@ header button#view-toggle-btn svg {
     align-items: flex-end;
     gap: 16px;
     margin-bottom: 16px;
+    flex-wrap: wrap;
 }
-.task-modal-options .date-option {
+/* NEU: Container für Datum und Uhrzeit flexibler gemacht */
+.task-modal-options .date-option,
+.task-modal-options .time-option {
+    flex-basis: calc(50% - 16px); /* 2 Spalten, mit Lücke */
     flex-grow: 1;
+    min-width: 120px; /* Mindestbreite */
 }
-.task-modal-options .date-option input[type="date"] {
+.task-modal-options .date-option input,
+.task-modal-options .time-option input {
     margin-bottom: 0; /* Ältere Regel überschreiben */
 }
 .modal label {
@@ -346,12 +464,13 @@ header button#view-toggle-btn svg {
     color: var(--text-color-light);
     margin-bottom: 4px;
     display: block;
+    font-weight: 500;
 }
 
 /* NEU: "Wichtig"-Button im Modal */
 .priority-toggle-btn {
     flex-shrink: 0;
-    width: 46px; /* Höhe = padding(12*2) + font-size(22) -> ~46px */
+    width: 46px;
     height: 46px;
     border-radius: 8px;
     border: 1px solid var(--border-color);
@@ -584,10 +703,8 @@ header button#settings-btn svg {
     align-items: center;
     gap: 12px;
     padding: 16px;
-    /* Klebt oben in der View, aber unter dem Banner */
     position: sticky; 
-    top: 60px; /* Oder 110px wenn Banner da ist? JS muss das evtl. anpassen */
-    /* Vorerst einfacher: kein sticky header */
+    top: 60px;
     border-bottom: 1px solid var(--border-color);
     background-color: #f9f9f9;
 }
@@ -674,4 +791,71 @@ header button#settings-btn svg {
     color: var(--text-color);
     margin-bottom: 4px;
     line-height: 1.4;
+}
+
+
+/* NEU: 8. Checklisten-Editor (im Modal) */
+
+.checklist-editor {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e5e5; /* Trennlinie */
+}
+
+.checklist-input-group {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+.checklist-input-group input {
+    margin-bottom: 0; /* Überschreibt .modal input */
+    flex-grow: 1;
+}
+.checklist-input-group button {
+    flex-shrink: 0;
+    width: 46px;
+    height: 46px;
+    border: none;
+    border-radius: 8px;
+    background-color: var(--primary-color);
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.checklist-items-list {
+    list-style: none;
+    padding: 0;
+    max-height: 150px; /* Begrenzte Höhe für die Liste */
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+.checklist-items-list li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    border-bottom: 1px solid #e5e5e5;
+}
+.checklist-items-list li:last-child {
+    border-bottom: none;
+}
+.checklist-items-list li span {
+    flex-grow: 1;
+    /* Erlaubt Zeilenumbruch bei langen Texten */
+    white-space: normal;
+    word-break: break-word;
+}
+.checklist-items-list li .delete-item-btn {
+    background: none;
+    border: none;
+    color: #ff3b30;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 4px;
+    flex-shrink: 0;
 }
