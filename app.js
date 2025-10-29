@@ -460,7 +460,7 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
         }
 
         // "Mehr..."-Logik
-        const hasCollapsibleContent = !!(dueDateTimeHtml || notesHtml || checklistHtml);
+        const hasCollapsibleContent = !!( notesHtml || checklistHtml);
         if (hasCollapsibleContent) {
             taskCard.classList.add('has-details');
         }
@@ -476,6 +476,7 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
                 <input type="checkbox" class="task-checkbox" ${task.isDone ? 'checked' : ''}>
                 <div class="task-title-group">
                     <div class="task-subject-name">${subjectName || ''}</div>
+                    ${dueDateTimeHtml}
                     <div class="task-title">
                         ${priorityIconHtml}
                         <span>${title}</span>
@@ -488,7 +489,6 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
                 <div class="task-collapsible-content">
                     ${notesHtml}
                     ${checklistHtml}
-                    ${dueDateTimeHtml}
                 </div>` : ''}
         `;
 

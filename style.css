@@ -230,8 +230,6 @@ header button#view-toggle-btn svg {
     width: 20px;
     height: 20px;
     flex-shrink: 0;
-    margin-top: 2px; /* Kleine Zentrierung */
-    align-self: flex-start; /* Oben ausrichten */
 }
 
 .task-title-group {
@@ -302,6 +300,12 @@ header button#view-toggle-btn svg {
     flex-shrink: 0; /* Verhindert Quetschen */
 }
 
+/* Fälligkeitsdatum, Uhrzeit */
+.task-due-date {
+    font-size: 0.7rem;
+    color: var(--text-color-light);
+}
+
 /* B. Der versteckte, aufklappbare Inhalt */
 .task-collapsible-content {
     max-height: 0;
@@ -357,14 +361,6 @@ header button#view-toggle-btn svg {
     opacity: 0.6;
 }
 
-/* Fälligkeitsdatum (jetzt im aufklappbaren Teil) */
-.task-due-date {
-    font-size: 0.8rem;
-    color: var(--text-color-light);
-    padding-left: 32px; /* Einrücken */
-    padding-top: 10px;
-    border-top: 1px solid #e5e5e5;
-}
 /* Wenn *nur* Datum da ist (keine Notizen/Checkliste), obere Border entfernen */
 .task-notes-preview + .task-checklist-preview + .task-due-date {
      border-top: none; /* Komplexer Selektor, evtl. vereinfachen */
