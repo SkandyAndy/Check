@@ -76,6 +76,11 @@ header button#add-subject-btn {
     padding-bottom: 4px;
 }
 
+/* Refresh Button */
+header button#refresh-btn svg {
+    fill: var(--primary-color);
+}
+
 header button#view-toggle-btn svg {
     fill: var(--primary-color);
 }

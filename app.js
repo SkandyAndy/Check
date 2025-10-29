@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Header
+    const refreshBtn = document.getElementById('refresh-btn');
     const viewToggleBtn = document.getElementById('view-toggle-btn');
     const addSubjectBtn = document.getElementById('add-subject-btn');
     const settingsBtn = document.getElementById('settings-btn'); 
@@ -802,6 +803,11 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
             }
         });
 
+        refreshBtn.addEventListener('click', async () => {
+            console.log("Refreshing view...");
+            await loadAndRenderAll(); // Ruft die Funktion auf, die alles neu zeichnet und sortiert
+        });
+
         addSubjectBtn.addEventListener('click', () => {
             showModal(addSubjectModal);
             subjectNameInput.focus(); 
@@ -1018,7 +1024,7 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
                 if (taskToUpdate) {
                     taskToUpdate.isDone = isDone;
                     await updateInDB('tasks', taskToUpdate);
-                    await loadAndRenderAll(); // Neu laden wg. Sortierung
+                    target.closest('.task-card').classList.toggle('is-done', isDone);
                 }
             }
 
