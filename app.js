@@ -1034,9 +1034,15 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
                     if (item) {
                         item.isDone = isDone;
                         await updateInDB('tasks', taskToUpdate);
-                        // Optimierung: Nur diese Karte neu zeichnen statt alles
-                        // TODO: Spätere Optimierung
-                        await loadAndRenderAll(); // Vorerst alles neu laden
+
+                        // Nur den Zähler auf der Karte aktualisieren
+                        const taskCardElement = target.closest('.task-card');
+                        const counterElement = taskCardElement.querySelector('.checklist-counter');
+                        if (counterElement) {
+                             const doneCount = taskToUpdate.checklist.filter(i => i.isDone).length;
+                             const totalCount = taskToUpdate.checklist.length;
+                             counterElement.textContent = `${doneCount}/${totalCount}`;
+                        }
                     }
                 }
             }
