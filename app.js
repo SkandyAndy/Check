@@ -1,13 +1,17 @@
+// ===================================================================================
+// CHECK - EINE EINFACHE TO-DO LISTEN PWA
+// Haupt-Skript für die Anwendungslogik
+// ===================================================================================
+
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- VARIABLEN & DOM-ELEMENTE ---
+    // --- 1. GLOBALE VARIABLEN & DOM-ELEMENTE ---
 
-    const APP_VERSION = '1.5'; // NEU: Versionsnummer
+    const APP_VERSION = '1.5.1';
     let db;
     let currentView = 'list';
     let lastActiveView = 'list';
     
-    // NEU: UUID-Generator (für Checklisten-Einträge)
     function generateUUID() {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
             var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
@@ -15,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Header
+    // Header-Elemente
     const refreshBtn = document.getElementById('refresh-btn');
     const viewToggleBtn = document.getElementById('view-toggle-btn');
     const addSubjectBtn = document.getElementById('add-subject-btn');
@@ -26,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const columnView = document.getElementById('column-view');
     const settingsView = document.getElementById('settings-view'); 
     
-    // Einstellungs-Seite
+    // Elemente der Einstellungs-Seite
     const settingsBackBtn = document.getElementById('settings-back-btn');
     const exportDataBtn = document.getElementById('export-data-btn');
     const importDataBtn = document.getElementById('import-data-btn');
@@ -46,34 +50,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const deleteSubjectModal = document.getElementById('delete-subject-modal'); 
 
     // Felder "Neues Fach"
-    const subjectNameInput = document.getElementById('subject-name-input');
+    const subjectNameInput = document.getElementById('subject-name-input'); // Eingabefeld für den Listennamen
     const saveSubjectBtn = document.getElementById('save-add-subject');
     const cancelSubjectBtn = document.getElementById('cancel-add-subject');
 
-const taskSubjectIdInput = document.getElementById('task-subject-id-input');
-const addTaskTitleInput = document.getElementById('add-task-title-input'); // Alt: taskDescInput
-const addTaskNotesInput = document.getElementById('add-task-notes-input'); // NEU
-const addTaskDueDateInput = document.getElementById('add-task-due-date-input'); // Alt: taskDueDateInput
-const addTaskDueTimeInput = document.getElementById('add-task-due-time-input'); // NEU
-const addTaskPriorityToggle = document.getElementById('add-task-priority-toggle');
-const addChecklistItemInput = document.getElementById('add-checklist-item-input'); // NEU
-const addChecklistItemBtn = document.getElementById('add-checklist-item-btn'); // NEU
-const addChecklistItemsList = document.getElementById('add-checklist-items-list'); // NEU
-const saveTaskBtn = document.getElementById('save-add-task');
-const cancelTaskBtn = document.getElementById('cancel-add-task');
+    // Felder "Neue Aufgabe"
+    const taskSubjectIdInput = document.getElementById('task-subject-id-input');
+    const addTaskTitleInput = document.getElementById('add-task-title-input');
+    const addTaskNotesInput = document.getElementById('add-task-notes-input');
+    const addTaskDueDateInput = document.getElementById('add-task-due-date-input');
+    const addTaskDueTimeInput = document.getElementById('add-task-due-time-input');
+    const addTaskPriorityToggle = document.getElementById('add-task-priority-toggle');
+    const addChecklistItemInput = document.getElementById('add-checklist-item-input');
+    const addChecklistItemBtn = document.getElementById('add-checklist-item-btn');
+    const addChecklistItemsList = document.getElementById('add-checklist-items-list');
+    const saveTaskBtn = document.getElementById('save-add-task');
+    const cancelTaskBtn = document.getElementById('cancel-add-task');
 
-// --- Felder "Aufgabe bearbeiten" ---
-const editTaskIdInput = document.getElementById('edit-task-id-input');
-const editTaskTitleInput = document.getElementById('edit-task-title-input'); // Alt: editTaskDescInput
-const editTaskNotesInput = document.getElementById('edit-task-notes-input'); // NEU
-const editTaskDueDateInput = document.getElementById('edit-task-due-date-input'); // Alt: editTaskDueDateInput
-const editTaskDueTimeInput = document.getElementById('edit-task-due-time-input'); // NEU
-const editTaskPriorityToggle = document.getElementById('edit-task-priority-toggle');
-const editChecklistItemInput = document.getElementById('edit-checklist-item-input'); // NEU
-const editChecklistItemBtn = document.getElementById('edit-checklist-item-btn'); // NEU
-const editChecklistItemsList = document.getElementById('edit-checklist-items-list'); // NEU
-const saveEditTaskBtn = document.getElementById('save-edit-task');
-const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
+    // Felder "Aufgabe bearbeiten"
+    const editTaskIdInput = document.getElementById('edit-task-id-input');
+    const editTaskTitleInput = document.getElementById('edit-task-title-input');
+    const editTaskNotesInput = document.getElementById('edit-task-notes-input');
+    const editTaskDueDateInput = document.getElementById('edit-task-due-date-input');
+    const editTaskDueTimeInput = document.getElementById('edit-task-due-time-input');
+    const editTaskPriorityToggle = document.getElementById('edit-task-priority-toggle');
+    const editChecklistItemInput = document.getElementById('edit-checklist-item-input');
+    const editChecklistItemBtn = document.getElementById('edit-checklist-item-btn');
+    const editChecklistItemsList = document.getElementById('edit-checklist-items-list');
+    const saveEditTaskBtn = document.getElementById('save-edit-task');
+    const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
 
     // Felder "Fach löschen"
     const deleteSubjectIdInput = document.getElementById('delete-subject-id-input');
@@ -88,8 +93,11 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
     const PRIORITY_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 96 960 960" width="24"><path d="M480 976q-33 0-56.5-23.5T400 896q0-33 23.5-56.5T480 816q33 0 56.5 23.5T560 896q0 33-23.5 56.5T480 976Zm-40-200v-480h80v480h-80Z"/></svg>`;
     const EDIT_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 96 960 960" width="20"><path d="M200 856h56l345-345-56-56-345 345v56Zm572-403L602 283l56-56q23-23 56.5-23t56.5 23l56 56q23 23 23 56.5T845 399l-73 73Z"/></svg>`;
 
-    // --- SPEICHER-PERSISTENZ ---
-    // ... (requestPersistentStorage Funktion bleibt unverändert) ...
+    // --- 2. PERSISTENTER SPEICHER ---
+    /**
+     * Versucht, den Speicher der App als "persistent" zu markieren.
+     * Dies verhindert, dass der Browser die Daten (IndexedDB) bei geringem Speicherplatz automatisch löscht.
+     */
     async function requestPersistentStorage() {
         if (navigator.storage && navigator.storage.persist) {
             try {
@@ -112,8 +120,12 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
         }
     }
 
-    // --- DATENBANK (INDEXEDDB) ---
+    // --- 3. DATENBANK (INDEXEDDB) ---
 
+    /**
+     * Initialisiert die IndexedDB-Datenbank.
+     * Erstellt die Object Stores 'subjects' (Listen) und 'tasks' (Aufgaben), falls sie nicht existieren.
+     */
     function initDatabase() {
         const request = indexedDB.open('SchoolAppDB', 1);
         request.onerror = (event) => console.error('Datenbank-Fehler:', event.target.error);
@@ -135,7 +147,12 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
         };
     }
 
-    // ... (Alle DB-Helper: getFromDB, getAllFromDB, addToDB, updateInDB, deleteFromDB, deleteSubjectAndTasks bleiben unverändert) ...
+    // --- Datenbank-Hilfsfunktionen (CRUD-Operationen) ---
+    /**
+     * Holt einen einzelnen Eintrag aus einem Store anhand seiner ID.
+     * @param {string} storeName - Der Name des Object Stores.
+     * @param {number} id - Die ID des Eintrags.
+     */
     function getFromDB(storeName, id) {
         return new Promise((resolve, reject) => {
             if (!db) return reject("DB nicht initialisiert");
@@ -147,6 +164,10 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
         });
     }
 
+    /**
+     * Holt alle Einträge aus einem Store.
+     * @param {string} storeName - Der Name des Object Stores.
+     */
     function getAllFromDB(storeName) {
         return new Promise((resolve, reject) => {
             if (!db) return reject("DB nicht initialisiert");
@@ -158,6 +179,11 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
         });
     }
 
+    /**
+     * Fügt einen neuen Eintrag zu einem Store hinzu.
+     * @param {string} storeName - Der Name des Object Stores.
+     * @param {object} data - Das hinzuzufügende Objekt.
+     */
     function addToDB(storeName, data) {
         return new Promise((resolve, reject) => {
             if (!db) return reject("DB nicht initialisiert");
@@ -169,6 +195,11 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
         });
     }
 
+    /**
+     * Aktualisiert einen bestehenden Eintrag in einem Store.
+     * @param {string} storeName - Der Name des Object Stores.
+     * @param {object} data - Das zu aktualisierende Objekt (muss eine 'id' Eigenschaft haben).
+     */
     function updateInDB(storeName, data) {
         return new Promise((resolve, reject) => {
             if (!db) return reject("DB nicht initialisiert");
@@ -180,6 +211,11 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
         });
     }
 
+    /**
+     * Löscht einen Eintrag aus einem Store anhand seiner ID.
+     * @param {string} storeName - Der Name des Object Stores.
+     * @param {number} id - Die ID des zu löschenden Eintrags.
+     */
     function deleteFromDB(storeName, id) {
          return new Promise((resolve, reject) => {
             if (!db) return reject("DB nicht initialisiert");
@@ -191,6 +227,10 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
         });
     }
 
+    /**
+     * Löscht eine Liste (subject) und alle zugehörigen Aufgaben (tasks).
+     * @param {number} subjectId - Die ID der zu löschenden Liste.
+     */
     function deleteSubjectAndTasks(subjectId) {
         return new Promise(async (resolve, reject) => {
             if (!db) return reject("DB nicht initialisiert");
@@ -213,18 +253,26 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
         });
     }
 
-    // --- MODAL (POP-UP) STEUERUNG ---
+    // --- 4. MODAL-STEUERUNG ---
 
-    // NEU: Lokaler State für Checklisten im Modal
-    // Wir brauchen das, damit Hinzufügen/Löschen funktioniert, bevor wir "Speichern" klicken.
+    // Lokaler State für die Checkliste, die gerade im Modal bearbeitet wird.
+    // Dies ist nötig, damit Hinzufügen/Löschen von Unterpunkten funktioniert,
+    // bevor die Aufgabe final gespeichert wird.
     let modalChecklistState = [];
 
+    /**
+     * Zeigt ein bestimmtes Modal und den Hintergrund-Overlay an.
+     * @param {HTMLElement} modalElement - Das anzuzeigende Modal-Element.
+     */
     function showModal(modalElement) {
         modalBackdrop.classList.add('active');
         modalElement.classList.add('active');
         modalChecklistState = [];
     }
 
+    /**
+     * Versteckt alle Modals und setzt die Eingabefelder zurück.
+     */
     function hideModals() {
         modalBackdrop.classList.remove('active');
         addSubjectModal.classList.remove('active');
@@ -232,7 +280,7 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
         editTaskModal.classList.remove('active');
         deleteSubjectModal.classList.remove('active');
 
-        // Alle "Add Task" Felder zurücksetzen
+        // Felder im "Neue Aufgabe"-Modal zurücksetzen
         taskSubjectIdInput.value = '';
         addTaskTitleInput.value = '';
         addTaskNotesInput.value = '';
@@ -240,9 +288,9 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
         addTaskDueTimeInput.value = '';
         addTaskPriorityToggle.classList.remove('active');
         addChecklistItemInput.value = '';
-        addChecklistItemsList.innerHTML = ''; // Wichtig: Liste leeren
+        addChecklistItemsList.innerHTML = '';
 
-        // Alle "Edit Task" Felder zurücksetzen
+        // Felder im "Aufgabe bearbeiten"-Modal zurücksetzen
         editTaskIdInput.value = '';
         editTaskTitleInput.value = '';
         editTaskNotesInput.value = '';
@@ -260,9 +308,12 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
         modalChecklistState = [];
         }
 
-    // --- NEU: Checklisten-Editor im Modal (Logik) ---
+    // --- 5. CHECKLISTEN-EDITOR LOGIK (IM MODAL) ---
 
-    // Diese Funktion rendert die `modalChecklistState` in der <ul>
+    /**
+     * Rendert die Checklisten-Punkte aus `modalChecklistState` in der UI.
+     * @param {HTMLUListElement} listElement - Das <ul>-Element, in das gerendert werden soll.
+     */
     function renderModalChecklist(listElement) {
         listElement.innerHTML = ''; // Liste leeren
         modalChecklistState.forEach(item => {
@@ -277,6 +328,11 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
         });
     }
 
+    /**
+     * Fügt einen neuen Punkt zur `modalChecklistState` hinzu und rendert die Liste neu.
+     * @param {HTMLInputElement} inputElement - Das Eingabefeld für den neuen Punkt.
+     * @param {HTMLUListElement} listElement - Das <ul>-Element zum Neu-Rendern.
+     */
     function handleAddChecklistItem(inputElement, listElement) {
         const text = inputElement.value.trim();
         if (text) {
@@ -290,6 +346,11 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
         }
     }
 
+    /**
+     * Entfernt einen Punkt aus der `modalChecklistState` und rendert die Liste neu.
+     * @param {Event} event - Das Klick-Event.
+     * @param {HTMLUListElement} listElement - Das <ul>-Element zum Neu-Rendern.
+     */
     function handleDeleteChecklistItem(event, listElement) {
         const deleteBtn = event.target.closest('.delete-item-btn');
         if (deleteBtn) {
@@ -299,27 +360,28 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
         }
     }
 
+    /**
+     * Öffnet das "Aufgabe bearbeiten"-Modal und füllt es mit den Daten der ausgewählten Aufgabe.
+     * @param {number} taskId - Die ID der zu bearbeitenden Aufgabe.
+     */
     async function openEditTaskModal(taskId) {
         try {
             const task = await getFromDB('tasks', taskId);
             if (!task) return;
 
             editTaskIdInput.value = task.id;
-            // WICHTIG: Altes "description"-Feld wird zu "title"
-            editTaskTitleInput.value = task.title || task.description || ''; // Fängt alte Tasks ab
-            editTaskNotesInput.value = task.notes || ''; // Neues Feld
+            editTaskTitleInput.value = task.title || task.description || ''; // `description` für Abwärtskompatibilität
+            editTaskNotesInput.value = task.notes || '';
             editTaskDueDateInput.value = task.dueDate || '';
-            editTaskDueTimeInput.value = task.dueTime || ''; // Neues Feld
+            editTaskDueTimeInput.value = task.dueTime || '';
 
-            if (task.isImportant) {
-                editTaskPriorityToggle.classList.add('active');
-            } else {
-                editTaskPriorityToggle.classList.remove('active');
-            }
+            // Setzt den "Wichtig"-Button basierend auf dem Task-Status
+            editTaskPriorityToggle.classList.toggle('active', !!task.isImportant);
 
             // Checkliste laden
-            modalChecklistState = [...(task.checklist || [])]; // Kopiert das Array
-            renderModalChecklist(editChecklistItemsList); // Zeichnet die Liste im Modal
+            // Eine Kopie erstellen, damit das Original nicht direkt verändert wird
+            modalChecklistState = [...(task.checklist || [])];
+            renderModalChecklist(editChecklistItemsList);
 
             showModal(editTaskModal);
             editTaskTitleInput.focus();
@@ -328,6 +390,10 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
         }
     }
 
+    /**
+     * Öffnet das "Liste löschen"-Bestätigungsmodal.
+     * @param {number} subjectId - Die ID der zu löschenden Liste.
+     */
     async function openDeleteSubjectModal(subjectId) {
         try {
             const subject = await getFromDB('subjects', subjectId);
@@ -340,8 +406,12 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
         }
     }
 
-    // --- RENDER-FUNKTIONEN (ZEICHNEN DER UI) ---
-    // NEU: Task-Sortierung (inkl. Uhrzeit)
+    // --- 6. RENDER-FUNKTIONEN (UI ZEICHNEN) ---
+
+    /**
+     * Sortiert ein Array von Aufgaben nach den folgenden Kriterien:
+     * 1. Erledigte Aufgaben nach unten. 2. Wichtige Aufgaben nach oben. 3. Nach Fälligkeitsdatum und -uhrzeit.
+     */
     function sortTasks(taskArray) {
         return taskArray.sort((a, b) => {
             // 1. Erledigte nach unten
@@ -372,6 +442,11 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
         });
     }
 
+    /**
+     * Sortiert ein Array von Listen (subjects) nach den folgenden Kriterien:
+     * 1. Listen mit offenen Aufgaben. 2. Listen mit nur erledigten Aufgaben. 3. Leere Listen.
+     * Innerhalb dieser Gruppen wird alphabetisch nach Namen sortiert.
+     */
     function sortSubjects(subjectArray, allTasks) {
         const subjectsWithStatus = subjectArray.map(subject => {
             const tasksForSubject = allTasks.filter(t => t.subjectId === subject.id);
@@ -395,7 +470,12 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
         });
     }
 
+    /**
+     * Lädt alle Daten aus der DB, sortiert sie und rendert die komplette Ansicht neu.
+     * Behält den "aufgeklappten" Zustand der Listen bei.
+     */
     async function loadAndRenderAll() {
+        // Speichert, welche Listen aktuell aufgeklappt sind, um den Zustand beizubehalten.
         const expandedSubjectIds = new Set(
             [...document.querySelectorAll('.subject-balken.expanded')]
                 .map(balken => balken.dataset.subjectId) 
@@ -413,6 +493,12 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
         }
     }
 
+    /**
+     * Erstellt das HTML-Element für eine einzelne Aufgaben-Karte.
+     * @param {object} task - Das Aufgaben-Objekt aus der DB.
+     * @param {string|null} subjectName - Der Name der zugehörigen Liste (optional, für die "Alle Aufgaben"-Ansicht).
+     * @returns {HTMLElement} Das `div`-Element der Task-Karte.
+     */
     function createTaskElement(task, subjectName = null) {
         const taskCard = document.createElement('div');
         taskCard.className = 'task-card';
@@ -420,7 +506,7 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
         if (task.isDone) taskCard.classList.add('is-done');
         if (task.isImportant) taskCard.classList.add('is-important');
 
-        const title = task.title || task.description || 'Unbenannte Aufgabe';
+        const title = task.title || task.description || 'Unbenannte Aufgabe'; // `description` für Abwärtskompatibilität
         const notes = task.notes || '';
         const checklist = task.checklist || [];
 
@@ -432,7 +518,7 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
         }
 
         // "Wichtig"-Icon
-        let priorityIconHtml = task.isImportant ? `<span class="task-priority-icon" title="Wichtig">!</span>` : '';
+        const priorityIconHtml = task.isImportant ? `<span class="task-priority-icon" title="Wichtig">!</span>` : '';
 
         // Datums/Uhrzeit-Text
         let dueDateTimeHtml = '';
@@ -444,7 +530,7 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
         }
 
         // Notizen
-        let notesHtml = notes ? `<p class="task-notes-preview">${notes}</p>` : '';
+        const notesHtml = notes ? `<p class="task-notes-preview">${notes}</p>` : '';
 
         // Checkliste
         let checklistHtml = '';
@@ -460,13 +546,10 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
             checklistHtml += '</ul>';
         }
 
-        // "Mehr..."-Logik
+        // Logik für den aufklappbaren Bereich ("Mehr...")
         const hasCollapsibleContent = !!( notesHtml || checklistHtml);
-        if (hasCollapsibleContent) {
-            taskCard.classList.add('has-details');
-        }
-        let moreIndicatorHtml = '';
-        if (hasCollapsibleContent) {
+        taskCard.classList.toggle('has-details', hasCollapsibleContent);
+        let moreIndicatorHtml = ''; if (hasCollapsibleContent) {
             // Wir verwenden '...' als einfachen Indikator
             moreIndicatorHtml = '<span class="more-indicator" title="Details anzeigen">...</span>';
         }
@@ -501,7 +584,10 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
         return taskCard;
     }
 
-
+    /**
+     * Rendert die Listenansicht ("Balken"-Ansicht).
+     * Erstellt eine spezielle "Alle offenen Aufgaben"-Liste und dann eine Liste für jedes Fach.
+     */
     function renderListView(subjects, tasks, expandedSubjectIds = new Set()) {
         listView.innerHTML = '';
         const allIncompleteTasks = tasks.filter(t => !t.isDone);
@@ -571,6 +657,9 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
         });
     }
 
+    /**
+     * Rendert die Spaltenansicht. Jede Liste wird zu einer eigenen Spalte.
+     */
     function renderColumnView(subjects, tasks) {
         columnView.innerHTML = '';
         if (subjects.length === 0) {
@@ -602,10 +691,10 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
     }
 
     
-    // --- NEU: IMPORT / EXPORT FUNKTIONEN ---
+    // --- 7. IMPORT / EXPORT FUNKTIONEN ---
 
     /**
-     * Löst den Download aller Daten als JSON-Datei aus.
+     * Sammelt alle Daten aus der IndexedDB und löst den Download als JSON-Datei aus.
      */
     async function handleExport() {
         console.log('Export wird gestartet...');
@@ -646,7 +735,8 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
     }
 
     /**
-     * Wird aufgerufen, wenn eine Import-Datei ausgewählt wurde.
+     * Verarbeitet die ausgewählte Backup-Datei.
+     * Liest die JSON-Datei und startet den Zusammenführungsprozess.
      */
     async function handleImport(event) {
         const file = event.target.files[0];
@@ -687,7 +777,7 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
 
     /**
      * Führt importierte Daten mit bestehenden DB-Daten zusammen.
-     * Verhindert Duplikate basierend auf Namen (Listen) und "Signaturen" (Aufgaben).
+     * Verhindert Duplikate bei Listen (gleicher Name) und Aufgaben (gleicher Titel, Liste, Fälligkeitsdatum).
      */
     async function mergeData(importedData) {
         const subjectsToImport = importedData.subjects || [];
@@ -696,10 +786,10 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
         const currentSubjects = await getAllFromDB('subjects');
         const currentTasks = await getAllFromDB('tasks');
 
-        // 1. Map für existierende Listennamen -> ID
+        // Map für existierende Listennamen -> ID, um Duplikate zu erkennen.
         const subjectNameMap = new Map(currentSubjects.map(s => [s.name.toLowerCase(), s.id]));
         
-        // 2. Map für "alte" Import-ID -> "neue" DB-ID (wichtig für Task-Zuweisung)
+        // Map für "alte" Import-ID -> "neue" DB-ID, um Tasks korrekt zuzuordnen.
         const oldIdToNewIdMap = new Map();
 
         // Schritt A: Listen (Subjects) mergen
@@ -722,9 +812,12 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
         console.log('Aufgaben werden zusammengeführt...');
 
         // Set für existierende Task-"Signaturen" (zum Abgleich von Duplikaten)
-        // Signatur = "ListenID-Beschreibung-Fälligkeitsdatum"
+        // Eine Signatur identifiziert eine Aufgabe eindeutig.
         const taskSignatureMap = new Set(
-            currentTasks.map(t => `${t.subjectId}-${t.description.trim()}-${t.dueDate || null}`)
+            currentTasks.map(t => {
+                const title = t.title || t.description || '';
+                return `${t.subjectId}-${title.trim()}-${t.dueDate || null}`;
+            })
         );
 
         for (const task of tasksToImport) {
@@ -732,20 +825,21 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
             const newSubjectId = oldIdToNewIdMap.get(task.subjectId);
 
             if (!newSubjectId) {
-                console.warn(`Überspringe Task, da zugehörige Liste nicht gefunden wurde: ${task.description}`);
+                console.warn(`Überspringe Task, da zugehörige Liste nicht gefunden wurde: ${task.title || task.description}`);
                 continue;
             }
             
-            const taskSignature = `${newSubjectId}-${task.description.trim()}-${task.dueDate || null}`;
+            const taskTitle = task.title || task.description || '';
+            const taskSignature = `${newSubjectId}-${taskTitle.trim()}-${task.dueDate || null}`;
             
             if (taskSignatureMap.has(taskSignature)) {
-                // Task existiert bereits (Duplikat)
-                console.log(`Überspringe Duplikat-Task: ${task.description}`);
+                console.log(`Überspringe Duplikat-Task: ${taskTitle}`);
             } else {
-                // Task ist neu, wir fügen ihn hinzu
+                // Task ist neu, wir fügen ihn mit den neuen Feldern hinzu
                 const newTask = {
-                    subjectId: newSubjectId,
-                    description: task.description,
+                    subjectId: newSubjectId, // Die neue/gemappte Listen-ID
+                    title: taskTitle,
+                    notes: task.notes || '',
                     dueDate: task.dueDate || null,
                     isDone: task.isDone || false,
                     isImportant: task.isImportant || false
@@ -757,8 +851,11 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
         console.log('Zusammenführung abgeschlossen.');
     }
 
-    // --- NEU: BACKUP-ERINNERUNG ---
+    // --- 8. BACKUP-ERINNERUNG ---
 
+    /**
+     * Prüft, ob das letzte Backup länger als eine Woche her ist und zeigt ggf. das Banner an.
+     */
     function checkBackupReminder() {
         const lastExport = localStorage.getItem('lastExportTimestamp');
         const EINE_WOCHE_MS = 7 * 24 * 60 * 60 * 1000; // 7 Tage
@@ -771,14 +868,20 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
         }
     }
 
+    /**
+     * Versteckt das Backup-Erinnerungs-Banner.
+     */
     function hideBackupReminder() {
         backupReminder.style.display = 'none';
         document.querySelector('.settings-header').style.top = '60px'; // Standard-Position
     }
 
 
-    // --- EVENT-LISTENER (BENUTZER-AKTIONEN) ---
+    // --- 9. EVENT-LISTENER ---
 
+    /**
+     * Richtet alle Event-Listener für die Anwendung ein.
+     */
     function setupEventListeners() {
 
         // App-Version in den Einstellungen setzen
@@ -786,7 +889,7 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
             appVersionDisplay.textContent = APP_VERSION;
         }
 
-        // --- Header-Buttons ---
+        // Header-Buttons
         viewToggleBtn.addEventListener('click', () => {
             if (currentView === 'list') {
                 currentView = 'column';
@@ -813,7 +916,7 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
             subjectNameInput.focus(); 
         });
 
-        // NEU: Einstellungs-Navigation
+        // Navigation zur Einstellungs-Seite
         settingsBtn.addEventListener('click', () => {
             lastActiveView = currentView; // Aktuelle Ansicht merken
             listView.classList.remove('active');
@@ -831,20 +934,19 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
             }
         });
 
-        // NEU: Import/Export Listener
+        // Import/Export Listener
         exportDataBtn.addEventListener('click', handleExport);
         importDataBtn.addEventListener('click', () => importFileInput.click());
         importFileInput.addEventListener('change', handleImport);
 
-        // NEU: Backup-Banner Listener
+        // Backup-Banner Listener
         backupReminderCloseBtn.addEventListener('click', hideBackupReminder);
         backupReminderBtn.addEventListener('click', () => {
             hideBackupReminder();
             settingsBtn.click(); // Öffnet die Einstellungsseite
         });
 
-        // --- Modal-Aktionen ---
-        // (Alle Listener für Modals, Speichern, Abbrechen, "Wichtig"-Toggle bleiben unverändert) ...
+        // Allgemeine Modal-Aktionen (Abbrechen, Schließen, "Wichtig"-Toggle)
         cancelSubjectBtn.addEventListener('click', hideModals);
         cancelTaskBtn.addEventListener('click', hideModals);
         modalBackdrop.addEventListener('click', hideModals);
@@ -853,6 +955,7 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
         addTaskPriorityToggle.addEventListener('click', () => addTaskPriorityToggle.classList.toggle('active'));
         editTaskPriorityToggle.addEventListener('click', () => editTaskPriorityToggle.classList.toggle('active'));
 
+        // Speichern einer neuen Liste
         saveSubjectBtn.addEventListener('click', async () => {
             const name = subjectNameInput.value.trim();
             if (name) {
@@ -864,9 +967,9 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
             }
         });
 
-        // --- "Neue Aufgabe" SPEICHERN ---
+        // Speichern einer neuen Aufgabe
         saveTaskBtn.addEventListener('click', async () => {
-            const title = addTaskTitleInput.value.trim(); // Name geändert
+            const title = addTaskTitleInput.value.trim();
             const subjectId = parseInt(taskSubjectIdInput.value);
 
             if (title && subjectId) {
@@ -888,10 +991,10 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
             }
         });
 
-        // --- "Aufgabe bearbeiten" SPEICHERN ---
+        // Speichern einer bearbeiteten Aufgabe
         saveEditTaskBtn.addEventListener('click', async () => {
             const id = parseInt(editTaskIdInput.value);
-            const title = editTaskTitleInput.value.trim(); // Name geändert
+            const title = editTaskTitleInput.value.trim();
 
             if (!id || !title) return;
             try {
@@ -899,12 +1002,12 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
                 if (!originalTask) return;
 
                 // Alle Felder aktualisieren
-                originalTask.title = title; // Neues Feld
-                originalTask.notes = editTaskNotesInput.value.trim(); // Neues Feld
+                originalTask.title = title;
+                originalTask.notes = editTaskNotesInput.value.trim();
                 originalTask.dueDate = editTaskDueDateInput.value || null;
-                originalTask.dueTime = editTaskDueTimeInput.value || null; // Neues Feld
+                originalTask.dueTime = editTaskDueTimeInput.value || null;
                 originalTask.isImportant = editTaskPriorityToggle.classList.contains('active');
-                originalTask.checklist = modalChecklistState; // Neues Feld (aus State)
+                originalTask.checklist = modalChecklistState;
                 // isDone wird NICHT hier geändert, nur über Checkbox
 
                 await updateInDB('tasks', originalTask);
@@ -915,6 +1018,7 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
             }
         });
 
+        // Bestätigen des Löschens einer Liste
         confirmDeleteSubjectBtn.addEventListener('click', async () => {
             const subjectId = parseInt(deleteSubjectIdInput.value);
             if (!subjectId) return;
@@ -928,30 +1032,22 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
             }
         });
 
-        // Checklisten-Editor: "Add Task" Modal
-        addChecklistItemBtn.addEventListener('click', () => {
-            handleAddChecklistItem(addChecklistItemInput, addChecklistItemsList);
-        });
-        addChecklistItemInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') handleAddChecklistItem(addChecklistItemInput, addChecklistItemsList);
-        });
-        addChecklistItemsList.addEventListener('click', (e) => {
-            handleDeleteChecklistItem(e, addChecklistItemsList);
-        });
+        // --- Checklisten-Editor Logik (für beide Modals) ---
+        // Diese Funktion richtet die Listener für einen Checklisten-Editor ein.
+        const setupChecklistEditor = (input, button, list) => {
+            button.addEventListener('click', () => handleAddChecklistItem(input, list));
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') handleAddChecklistItem(input, list);
+            });
+            list.addEventListener('click', (e) => handleDeleteChecklistItem(e, list));
+        };
+        // Einmal für das "Neue Aufgabe"-Modal...
+        setupChecklistEditor(addChecklistItemInput, addChecklistItemBtn, addChecklistItemsList);
+        // ...und einmal für das "Aufgabe bearbeiten"-Modal.
+        setupChecklistEditor(editChecklistItemInput, editChecklistItemBtn, editChecklistItemsList);
 
-        // Checklisten-Editor: "Edit Task" Modal
-        editChecklistItemBtn.addEventListener('click', () => {
-            handleAddChecklistItem(editChecklistItemInput, editChecklistItemsList);
-        });
-        editChecklistItemInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') handleAddChecklistItem(editChecklistItemInput, editChecklistItemsList);
-        });
-        editChecklistItemsList.addEventListener('click', (e) => {
-            handleDeleteChecklistItem(e, editChecklistItemsList);
-        });
 
-        // --- Event Delegation für dynamische Inhalte ---
-        // (Unverändert)
+        // --- Event Delegation für dynamisch erstellte Elemente ---
         document.body.addEventListener('click', async (event) => {
             const target = event.target;
             const balkenHeader = target.closest('.balken-header');
@@ -959,6 +1055,8 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
                 balkenHeader.parentElement.classList.toggle('expanded');
             }
             const addTaskBtnList = target.closest('.add-task-btn');
+
+            // Klick auf "+"-Button in der Listenansicht
             if (addTaskBtnList) {
                 const subjectId = parseInt(addTaskBtnList.closest('.subject-balken').dataset.subjectId);
                 taskSubjectIdInput.value = subjectId; 
@@ -966,6 +1064,8 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
                 addTaskTitleInput.focus();
             }
             const addTaskBtnColumn = target.closest('.add-task-btn-column');
+
+            // Klick auf "+ Aufgabe hinzufügen"-Button in der Spaltenansicht
             if (addTaskBtnColumn) {
                 const subjectId = parseInt(addTaskBtnColumn.closest('.subject-column').dataset.subjectId);
                 taskSubjectIdInput.value = subjectId; 
@@ -973,6 +1073,8 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
                 addTaskTitleInput.focus();
             }
             const deleteTaskBtn = target.closest('.delete-task-btn');
+
+            // Klick auf "Löschen"-Button einer Aufgabe (existiert nicht mehr, aber sicherheitshalber drin lassen)
             if (deleteTaskBtn) {
                 const taskId = parseInt(deleteTaskBtn.closest('.task-card').dataset.taskId);
                 if (confirm('Möchtest du diese Aufgabe wirklich löschen?')) {
@@ -981,6 +1083,7 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
                 }
             }
 
+            // Klick auf "Löschen"-Button einer Liste
             const deleteSubjectBtn = target.closest('.delete-subject-btn');
             if (deleteSubjectBtn) {
                 let subjectId;
@@ -994,14 +1097,14 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
                 }
             }
 
-            // AKTION: Aufgabe bearbeiten (Klick auf Stift)
+            // Klick auf "Bearbeiten"-Stift einer Aufgabe
             const taskEditBtn = target.closest('.task-edit-btn');
             if (taskEditBtn) {
                 const taskId = parseInt(taskEditBtn.closest('.task-card').dataset.taskId);
                 await openEditTaskModal(taskId);
             }
 
-            // AKTION: Task-Karte auf/zuklappen
+            // Klick auf eine Task-Karte, um sie auf-/zuzuklappen (wenn sie Details hat)
             const taskHeader = target.closest('.task-header');
             if (taskHeader && !target.closest('button') && !target.closest('input')) { // Nicht auf Buttons/Checkbox
                 const taskCard = taskHeader.closest('.task-card');
@@ -1011,12 +1114,11 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
             }
         });
         
-        // Separater Listener für 'change' Events (Checkboxes)
-        // (Unverändert)
+        // Separater Listener für 'change'-Events, hauptsächlich für Checkboxen.
         document.body.addEventListener('change', async (event) => {
             const target = event.target;
 
-            // AKTION: Haupt-Task Checkbox
+            // Haupt-Checkbox einer Aufgabe wird geändert
             if (target.classList.contains('task-checkbox')) {
                 const taskId = parseInt(target.closest('.task-card').dataset.taskId);
                 const isDone = target.checked;
@@ -1028,7 +1130,7 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
                 }
             }
 
-            // AKTION: Sub-Task Checkbox
+            // Checkbox einer Unteraufgabe (Checkliste) wird geändert
             if (target.classList.contains('sub-task-checkbox')) {
                 const taskId = parseInt(target.closest('.task-card').dataset.taskId);
                 const subTaskId = target.closest('li').dataset.itemId;
@@ -1055,7 +1157,7 @@ const cancelEditTaskBtn = document.getElementById('cancel-edit-task');
         });
     }
 
-    // --- INITIALISIERUNG ---
+    // --- 10. INITIALISIERUNG ---
     initDatabase();
     setupEventListeners();
     requestPersistentStorage();

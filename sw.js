@@ -1,5 +1,5 @@
 // NEU: Name des Caches auf v1.5 geändert (oder was auch immer deine nächste Version ist)
-const CACHE_NAME = 'check-app-cache-v1.5';
+const CACHE_NAME = 'check-app-cache-v1.5.1';
 
 // Dateien, die für die App-Shell benötigt werden
 const FILES_TO_CACHE = [

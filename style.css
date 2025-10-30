@@ -174,7 +174,7 @@ header button#view-toggle-btn svg {
     background-image: linear-gradient(to right, #d6cc9fc4, #d1c9a5);
     border-radius: 12px;
     padding: 12px;
-    border: 1px solid var(--border-color);
+    border: 1px solid #c5c0a9;
 }
 
 .subject-column h2 {
@@ -381,11 +381,6 @@ header button#view-toggle-btn svg {
 .task-card.is-done .task-priority-icon {
     opacity: 0.6;
 }
-/* Wenn Haupt-Task erledigt, klappbare Inhalte ausblenden */
-.task-card.is-done .task-collapsible-content {
-    display: none;
-}
-
 
 /* 6. Modals (Pop-ups) */
 #modal-backdrop {
@@ -431,7 +426,7 @@ header button#view-toggle-btn svg {
 .modal input[type="date"],
 .modal input[type="time"],
 .modal textarea {
-    width: 100%;
+    width: 100%; 
     padding: 12px;
     border: 1px solid var(--border-color);
     border-radius: 8px;
@@ -474,7 +469,7 @@ header button#view-toggle-btn svg {
     width: 46px;
     height: 46px;
     border-radius: 8px;
-    border: 1px solid var(--border-color);
+    border: 1px solid #c5c0a9;
     background-color: #e5e5e5;
     cursor: pointer;
     display: flex;
@@ -731,7 +726,7 @@ header button#settings-btn svg {
     border-radius: 12px;
     padding: 16px;
     margin: 16px;
-    border: 1px solid var(--border-color);
+    border: 1px solid #e0e0e0;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 .settings-section h3 {
@@ -829,7 +824,7 @@ header button#settings-btn svg {
     padding: 0;
     max-height: 150px; /* Begrenzte Höhe für die Liste */
     overflow-y: auto;
-    border: 1px solid var(--border-color);
+    border: 1px solid #e0e0e0;
     border-radius: 8px;
 }
 
