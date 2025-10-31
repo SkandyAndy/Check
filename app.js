@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 1. GLOBALE VARIABLEN & DOM-ELEMENTE ---
 
-    const APP_VERSION = '1.5.1';
+    const APP_VERSION = '1.5.2';
     let db;
     let currentView = 'list';
     let lastActiveView = 'list';
@@ -265,6 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
      * @param {HTMLElement} modalElement - Das anzuzeigende Modal-Element.
      */
     function showModal(modalElement) {
+        modalChecklistState = []; // State hier zurücksetzen, BEVOR er evtl. neu befüllt wird.
         modalBackdrop.classList.add('active');
         modalElement.classList.add('active');
         modalChecklistState = [];
@@ -384,6 +385,10 @@ document.addEventListener('DOMContentLoaded', () => {
             renderModalChecklist(editChecklistItemsList);
 
             showModal(editTaskModal);
+            
+            // Modal anzeigen, NACHDEM der State befüllt wurde.
+            editTaskModal.classList.add('active');
+            modalBackdrop.classList.add('active');
             editTaskTitleInput.focus();
         } catch (error) {
             console.error('Fehler beim Öffnen des Edit-Modals:', error);
